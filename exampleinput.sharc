@@ -1,6 +1,12 @@
-name {
+nameless {
 
-  Z: 38
-  N: 56
-  
+  Z:                38
+  N:                56
+
+  targetthickness:  4.5 // um
+  targetmaterial:   cd2
+
+  rundatadir:       /data4/tigress/PeterSteffen/
+  srcdatadir:       /data4/tigress/S1389Work_part2/PeterSandbox/
+
 }

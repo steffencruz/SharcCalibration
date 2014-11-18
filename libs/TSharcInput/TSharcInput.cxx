@@ -32,18 +32,30 @@ TSharcInput::~TSharcInput() {  }
 
 void TSharcInput::Print(Option_t *opt) { 
 
+  bool all = false;
+  if(strcmp(opt,"a")==0)
+     all = true;
+
   printf(DCYAN "TSharcInput:" RESET_COLOR "\n");
   printf("\t beam A : \t %i\n",GetA());
   printf("\t beam Z : \t %i\n",GetZ());
   printf("\t beam N : \t %i\n",GetN());
 
+  if(all) printf("\t target thickness : \t %.3f\n",GetTargetThickness());
+  if(all) printf("\t target material  : \t %s\n",GetTargetMaterial().c_str());
+  if(all) printf("\t run datadir      : \t %s\n",GetRunDataDir().c_str());
+  if(all) printf("\t src datadir      : \t %s\n",GetSrcDataDir().c_str());
 }
 
 void TSharcInput::Clear(Option_t *opt) { 
    
-   fprotons = 0;
-   fneutrons = 0;
-   
+  fprotons = 0;
+  fneutrons = 0;
+  ftargthick = 0.0;
+
+  ftargmat.clear(); 
+  frundatadir.clear();     
+  fsrcdatadir.clear();    
 }
 
 
@@ -81,7 +93,6 @@ bool TSharcInput::ParseInputFile(const char *filename){
 
   std::string infilename; 
   infilename.append(filename);
-  printf("infilename.c_str() = %s", infilename.c_str() );
   if(infilename.length()==0)
     return false;
 
@@ -142,12 +153,21 @@ bool TSharcInput::ParseInputFile(const char *filename){
           }
 
           if(type.compare("Z")==0) {
-            int tempint; ss>>tempint;
+            UInt_t tempint; ss>>tempint;
             SetZ(tempint);
           } else if(type.compare("N")==0) {
-            int tempint; ss>>tempint;
+            UInt_t tempint; ss>>tempint;
             SetN(tempint);
-          }
+          } else if(type.compare("TARGETMATERIAL")==0){
+            SetTargetMaterial(line);
+          } else if(type.compare("TARGETTHICKNESS")==0){
+             Double_t tempdouble; ss>>tempdouble;
+            SetTargetThickness(tempdouble);
+          } else if(type.compare("RUNDATADIR")==0){
+            SetRunDataDir(line);
+          } else if(type.compare("SRCDATADIR")==0){
+            SetSrcDataDir(line);
+         } 
        }
     }
   }

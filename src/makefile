@@ -28,7 +28,7 @@ LFLAGS = -Wl,--no-as-needed
 endif
 
 LIBS =  -lSharcInput
-LIBS += 
+LIBS += -lObjectManager 
 
 SYSLIBS = #-ldl -lxml2
 

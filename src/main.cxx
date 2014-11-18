@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   if(!TSharcInput::Get()->InitSharcInput(argv[1]))
      return 1;
 
-  TSharcInput::Get()->Print();
+  TSharcInput::Get()->Print("a");
 	return 0;
 	
 }

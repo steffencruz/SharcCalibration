@@ -1,4 +1,4 @@
-SUBDIRS = TSharcInput 
+SUBDIRS = TSharcInput TObjectManager 
 ALLDIRS = $(SUBDIRS)
 
 .PHONY: subdirs $(ALLDIRS) clean
