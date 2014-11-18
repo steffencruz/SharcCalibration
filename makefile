@@ -48,7 +48,7 @@ MAKE=make --no-print-directory
 
 .PHONY: all subdirs $(ALLDIRS) clean util
 
-all: print subdirs sharccal 
+all: print subdirs bin sharccal 
 
 util:
 	@$(MAKE) -C $@
