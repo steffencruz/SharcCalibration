@@ -1,5 +1,6 @@
 
 OBJECTS = main.o 
+
 vpath %.so $(BASE)/libs
 #LIBRARIES = libTGRSIint.so
 
@@ -13,27 +14,28 @@ LDROOT =  $(shell root-config --glibs)  #`root-config --glibs`
 INC = -I$(BASE)/include
 INC += -I$(MIDASSYS)/include
 
-LIBDIR = -L$(BASE)/libraries
-ifdef MIDASSYS
-ifeq ($(PLATFORM),Darwin)
-LIBDIR += -L$(MIDASSYS)/darwin/lib
-else ifeq ($(PLATFORM),Linux)
-LIBDIR += -L$(MIDASSYS)/linux/lib
-endif
-endif
+LIBDIR = -L$(BASE)/libs
+#ifdef MIDASSYS
+#ifeq ($(PLATFORM),Darwin)
+#LIBDIR += -L$(MIDASSYS)/darwin/lib
+#else ifeq ($(PLATFORM),Linux)
+#LIBDIR += -L$(MIDASSYS)/linux/lib
+#endif
+#endif
 
 ifndef __APPLE__
 LFLAGS = -Wl,--no-as-needed
 endif
 
-LIBS = 
+LIBS =  -lSharcInput
+LIBS += 
 
 SYSLIBS = #-ldl -lxml2
 
 #COMP_STRING="Now Compiling"
 
 sharccal: $(OBJECTS) $(LIBRARIES)
-	@printf " ${COM_COLOR}%s ${OBJ_COLOR}\t grsisort ${NO_COLOR}" $(COMP_STRING)
+	@printf " ${COM_COLOR}%s ${OBJ_COLOR}\t sharccal ${NO_COLOR}" $(COMP_STRING)
 	@$(CXX) $^ $(CFLAGS) $(CPPFLAGS) $(INC) $(LIBDIR) $(LFLAGS) $(LIBS) $(DETLIBS) $(LDROOT) $(SYSLIBS) -o $@  2> temp.log || touch temp.errors
 	@if test -e temp.errors; then  \
 	 printf "\r ${COM_COLOR}%s ${OBJ_COLOR}%-30s ${ERROR_COLOR}%*s${NO_COLOR}\n" $(COMP_STRING) $@ 10 $(ERROR_STRING) \

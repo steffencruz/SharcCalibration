@@ -1,4 +1,4 @@
-SUBDIRS = src 
+SUBDIRS = libs src 
 ALLDIRS = $(SUBDIRS)
 
 PLATFORM = $(shell uname)
