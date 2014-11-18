@@ -1,4 +1,4 @@
-
+#include "Globals.h"
 #include "TSharcInput.h"
 
 ClassImp(TSharcInput)
@@ -20,6 +20,19 @@ TSharcInput::TSharcInput(bool flag) {
 
 }
 
+
 TSharcInput::~TSharcInput() {  }
 
 
+
+void TSharcInput::Print(Option_t *opt) { 
+
+  printf(DCYAN "TSharcInput:" RESET_COLOR "\n");
+  printf("\t beam A : \t %i\n",10);
+
+
+
+}
+
+
+void TSharcInput::Clear(Option_t *opt) {  }
