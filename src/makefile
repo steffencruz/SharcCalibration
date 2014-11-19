@@ -29,6 +29,7 @@ endif
 
 LIBS =  -lSharcInput
 LIBS += -lObjectManager 
+LIBS += -lSharcName
 
 SYSLIBS = #-ldl -lxml2
 

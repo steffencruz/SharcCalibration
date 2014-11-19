@@ -3,19 +3,6 @@
 
 ClassImp(TObjectManager)
 
-
-
-std::string TObjectManager::fChgMatName   = "ChargeMatrix";       // [TH2F] Charge vs BackStrip    [p+d+c],[a]
-std::string TObjectManager::fChgSpecName  = "ChargeSpectrum";     // [TH1D] Charge                 [p+d+c],[a]
-std::string TObjectManager::fCalGraphName = "CalibrationGraph";   // [TGE]  Energy vs Charge       [p+d+a]
-std::string TObjectManager::fMulGraphName = "MultiGraph";         // [TGE]  Energy vs Charge       [p+d+a]
-std::string TObjectManager::fKinMatName   = "KinematicsMatrix";   // [TH2F] Energy vs ThetaLab     [p],[d]
-std::string TObjectManager::fKinResName   = "KinematicsResidual"; // [TH2F] Energy-Kin vs ThetaLab [p],[d]
-std::string TObjectManager::fExcMatName   = "ExcitationMatrix";   // [TH2F] Excitation vs ThetaLab [p],[d]
-std::string TObjectManager::fExcSpecName  = "ExcitationMatrix";   // [TH1D] Excitation             [p],[d]
-
-
-
 TObjectManager *TObjectManager::fObjectManager = 0;
 
 TObjectManager *TObjectManager::Get() {
