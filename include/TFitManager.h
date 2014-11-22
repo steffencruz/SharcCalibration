@@ -3,8 +3,15 @@
 
 #include <Rtypes.h>
 #include <TNamed.h>
+#include <TH1.h>
 #include <TF1.h>
+#include <TGraph.h>
 #include <TSpectrum.h>
+
+
+//#include "TGRSIFunctions.h"
+
+#include "TFitInfo.h"
 
 class TFitManager : public TNamed  { 
   public:
@@ -14,27 +21,16 @@ class TFitManager : public TNamed  {
     virtual void Print(Option_t *opt = "");
     virtual void Clear(Option_t *opt = "");
 
-  private:
-    struct FitInfo{
-      Bool_t Flag;
-      TF1 *Function;
-      TSpectrum *Spec;
-    }
-
   public:
-    FitInfo *FitWithLanGaus(TH1D *h, UInt_t npeaks=2, Double_t resolution = 100.0, UInt_t groupbins = 0);
-    Fitinfo *FitWithSkewedGaus(TH1D *h, UInt_t npeaks=2, Double_t resolution = 100.0, UInt_t groupbins = 0);
-//    FitInfo *FitMultiGaus(TH1D *h, UInt_t npeaks, Double_t resolution = 100.0, UInt_t groupbins = 0);
-    TSpectrum *PeakSearch(TH1D *h, UInt_t npeaks, Double_t resolution);
 
-    Double_t LanGausHighRes(Double_t *x,Double_t *pars);
-    Double_t LanGaus(Double_t *x,Double_t *pars);
-    Double_t Landau(Double_t *x,Double_t *pars);
-    Double_t MultiSkewedGausWithBG(Double_t *x,Double_t *pars);
-    Double_t SkewedGaus(Double_t *x,Double_t *pars);
-//    Double_t MultiGaus(Double_t *x,Double_t *pars);
-
-  ClassDef(TFitManager,0)
+//    static TFitInfo *FitHist(const char *fname, TH1D *h, Double_t *parms=0, UInt_t Nparms=10, Double_t xlow=-1, Double_t xhigh=-1);
+//    static TFitInfo *FitGraph(const char *fname, TGraph *h, Double_t *parms=0, UInt_t Nparms=10, Double_t xlow=-1, Double_t xhigh=-1);
+    
+    static TFitInfo *FitHist(TF1 *func, TH1D *h, Double_t *parms=0, UInt_t Nparms=10, Double_t xlow=-1, Double_t xhigh=-1);
+    static TFitInfo *FitGraph(TF1 *func, TGraph *h, Double_t *parms=0, UInt_t Nparms=10, Double_t xlow=-1, Double_t xhigh=-1);
+    static TSpectrum *PeakSearch(TH1D *h, UInt_t npeaks=2, Double_t resolution=100.0, Double_t threshold=0.25); 
+  
+ ClassDef(TFitManager,0)
 
 };
 

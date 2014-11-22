@@ -1,5 +1,5 @@
-#ifndef THISTMANAGER_H
-#define THISTMANAGER_H
+#ifndef TOBJECTMANAGER_H
+#define TOBJECTMANAGER_H
 
 #include <Rtypes.h>
 #include <TObject.h>
@@ -30,6 +30,8 @@ class TObjectManager : public TObject  {
     void CreateList(const char *listname);
 
     TObject *GetObject(const char *oname, const char *listname=0);
+
+    TList *GetMasterList() { return fMasterList; }
 
   ClassDef(TObjectManager,1)
 

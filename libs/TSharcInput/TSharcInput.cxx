@@ -42,9 +42,9 @@ void TSharcInput::Print(Option_t *opt) {
   printf("\t beam N : \t %i\n",GetN());
 
   if(all) printf("\t target thickness : \t %.3f\n",GetTargetThickness());
-  if(all) printf("\t target material  : \t %s\n",GetTargetMaterial().c_str());
-  if(all) printf("\t run datadir      : \t %s\n",GetRunDataDir().c_str());
-  if(all) printf("\t src datadir      : \t %s\n",GetSrcDataDir().c_str());
+  if(all) printf("\t target material  : \t %s\n",GetTargetMaterial());
+  if(all) printf("\t run datadir      : \t %s\n",GetRunDataDir());
+  if(all) printf("\t src datadir      : \t %s\n",GetSrcDataDir());
 }
 
 void TSharcInput::Clear(Option_t *opt) { 
@@ -159,17 +159,27 @@ bool TSharcInput::ParseInputFile(const char *filename){
             UInt_t tempint; ss>>tempint;
             SetN(tempint);
           } else if(type.compare("TARGETMATERIAL")==0){
-            SetTargetMaterial(line);
+            SetTargetMaterial(line.c_str());
           } else if(type.compare("TARGETTHICKNESS")==0){
              Double_t tempdouble; ss>>tempdouble;
             SetTargetThickness(tempdouble);
           } else if(type.compare("RUNDATADIR")==0){
-            SetRunDataDir(line);
+            SetRunDataDir(line.c_str());
           } else if(type.compare("SRCDATADIR")==0){
-            SetSrcDataDir(line);
+            SetSrcDataDir(line.c_str());
          } 
        }
     }
   }
   return false;
+}
+
+
+const char *TSharcInput::MakeOutputName(){
+
+  char outname[256];
+  //UInt_t a = TSharcInput::GetA();
+  //sprintf(outname,"Cal_%iSr.root",GetA());
+
+  return (const char *)outname;
 }

@@ -27,8 +27,11 @@ ifndef __APPLE__
 LFLAGS = -Wl,--no-as-needed
 endif
 
-LIBS =  -lSharcInput
-LIBS += -lObjectManager 
+LIBS =  -lFileWriter
+LIBS += -lFitInfo
+LIBS += -lFitManager
+LIBS += -lObjectManager
+LIBS += -lSharcInput
 LIBS += -lSharcName
 
 SYSLIBS = #-ldl -lxml2

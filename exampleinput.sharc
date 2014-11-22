@@ -9,4 +9,10 @@ nameless {
   rundatadir:       /data4/tigress/PeterSteffen/
   srcdatadir:       /data4/tigress/S1389Work_part2/PeterSandbox/
 
+// DATA PROCESSING OPTIONS
+// rundata: analysis289*
+// rundata: analysis2901*
+// rundata: analysis2911_0*
+// dchargemin: 500
+// trifoil: 10 50 
 }

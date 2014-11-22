@@ -7,6 +7,8 @@
 #include <TSharcInput.h>
 
 
+void SetOptions();
+
 int main(int argc, char **argv) {
 	
 	printf("srsly world ... again?\n");
@@ -15,8 +17,15 @@ int main(int argc, char **argv) {
      return 1;
 
   TSharcInput::Get()->Print("a");
-	return 0;
+	
+  return 0;
 	
 }
 
+void SetOptions(){
+
+  
+
+  return;
+}
 
