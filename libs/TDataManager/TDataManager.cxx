@@ -1,5 +1,8 @@
 #include "TDataManager.h"
 
+#include<vector>
+#include<string>
+
 ClassImp(TDataManager);
 
 
@@ -11,7 +14,10 @@ TSharcHit   *TDataManager::fSharcHit   = 0;
 TTigressHit *TDataManager::fTigressHit = 0;
 TTriFoilHit *TDataManager::fTrifoilHit = 0;
 
-TDataManager::TDataManager() { }
+TDataManager::TDataManager() { 
+
+  ApplySharcInput();
+}
 
 TDataManager::~TDataManager() { }
 

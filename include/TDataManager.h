@@ -5,15 +5,20 @@
 #include<RTypes.h>
 #include<TList.h>
 
-#include<TSharc.h>
-#include<TTigress.h>
-#include<TTriFoil.h>
+#include "TSharc.h"
+#include "TTigress.h"
+#include "TTriFoil.h"
+#include "TSharcHit.h"
+#include "TTigressHit.h"
+#include "TTriFoilHit.h"
+
+#include<TSharcInput.h>
+#include<TSharcName.h>
+#include<TObjectManager.h>
+
 
 // If TSharcInput is the brains, this class is the muscle of the package. It handles looping over data, creating histograms and applying the TSharcInput user settings
 
-// This class uses TSharcInput to make histograms consistently and efficiently. It should not be used without a TSharcInput instance as it has no default options or behaviour -> it is completely directed by TSharcInput. Its primary function is ProcessData, which loops over the chain entries and calls FillHists each time. In FillHists the histograms of interest are located and data is added appropriately. ProcessData is the only function that loops over chain entries, an dso it should be called as little as possible (ideally once). FillHists therefore is equipped with a means to locate and fill one or many different histograms with the contents of the detector branches (TSharc,TTigress,TTriFoil). 
-// We need to fill charge histograms in ProcessData (sharc_hits.front_charge,detectornumber,frontstrip,backstrip)
-// We (eventually) need to fill pad histograms, and maybe even trees with everything useful..?
 class TDataManager: public TNamed {
 
 	public:

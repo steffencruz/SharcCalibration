@@ -27,7 +27,8 @@ ifndef __APPLE__
 LFLAGS = -Wl,--no-as-needed
 endif
 
-LIBS =  -lFileWriter
+LIBS =  -lDataManager
+LIBS += -lFileWriter
 LIBS += -lFitInfo
 LIBS += -lFitManager
 LIBS += -lObjectManager

@@ -22,7 +22,6 @@ class TSharcInput : public TNamed  {
     static TSharcInput *fSharcInput;
     TSharcInput(bool);
 
-
     void trim(std::string *line, const std::string trimchars = " \f\t\n\r\v");
     bool ParseInputFile(const char *);
 
@@ -37,6 +36,14 @@ class TSharcInput : public TNamed  {
     void AddRunData(std::string tmp)        { frundata.push_back(tmp); }
     void AddSrcData(std::string tmp)        { fsrcdata.push_back(tmp); }
 
+    void SetFrontChargeMinMax(Double_t chgmin = 0.0, Double_t chgmax = 0.0) 
+         {fFrontCharge_min = chgmin;  fFrontCharge_max = chgmax;}
+    void SetBackChargeMinMax(Double_t chgmin = 0.0, Double_t chgmax = 0.0) 
+         {fBackCharge_min = chgmin;  fBackCharge_max = chgmax;}
+    void SetPadChargeMinMax(Double_t chgmin = 0.0, Double_t chgmax = 0.0) 
+         {fPadCharge_min = chgmin;  fPadCharge_max = chgmax;}
+
+    
     UInt_t GetZ()                   { return fprotons            ; }
     UInt_t GetN()                   { return fneutrons           ; }
     UInt_t GetA()                   { return fprotons + fneutrons; }
@@ -45,14 +52,10 @@ class TSharcInput : public TNamed  {
     const char *GetRunDataDir()     { return frundatadir.c_str() ; }
     const char *GetSrcDataDir()     { return fsrcdatadir.c_str() ; }
 
-<<<<<<< HEAD
     std::vector<std::string> GetRunData() { return frundata; }
     std::vector<std::string> GetSrcData() { return fsrcdata; }
     
     const char *MakeOutputName();
-=======
-    const char *MakeOutputName(void);
->>>>>>> 1204e81fbd47b517d7caa87c63658b41560f3b99
 
     void SetRunChgMat(const char *tmp)   { frunchgmat.assign(tmp); }
     void SetSrcChgMat(const char *tmp)   { fsrcchgmat.assign(tmp); }
