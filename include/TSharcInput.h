@@ -45,10 +45,14 @@ class TSharcInput : public TNamed  {
     const char *GetRunDataDir()     { return frundatadir.c_str() ; }
     const char *GetSrcDataDir()     { return fsrcdatadir.c_str() ; }
 
+<<<<<<< HEAD
     std::vector<std::string> GetRunData() { return frundata; }
     std::vector<std::string> GetSrcData() { return fsrcdata; }
     
     const char *MakeOutputName();
+=======
+    const char *MakeOutputName(void);
+>>>>>>> 1204e81fbd47b517d7caa87c63658b41560f3b99
 
     void SetRunChgMat(const char *tmp)   { frunchgmat.assign(tmp); }
     void SetSrcChgMat(const char *tmp)   { fsrcchgmat.assign(tmp); }
