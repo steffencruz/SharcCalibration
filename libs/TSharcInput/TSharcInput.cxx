@@ -32,19 +32,19 @@ TSharcInput::~TSharcInput() {  }
 
 void TSharcInput::Print(Option_t *opt) { 
 
-  bool all = false;
+  bool printall = false;
   if(strcmp(opt,"a")==0)
-     all = true;
+     printall = true;
 
   printf(DCYAN "TSharcInput:" RESET_COLOR "\n");
   printf("\t beam A : \t %i\n",GetA());
   printf("\t beam Z : \t %i\n",GetZ());
   printf("\t beam N : \t %i\n",GetN());
 
-  if(all) printf("\t target thickness : \t %.3f\n",GetTargetThickness());
-  if(all) printf("\t target material  : \t %s\n",GetTargetMaterial());
-  if(all) printf("\t run datadir      : \t %s\n",GetRunDataDir());
-  if(all) printf("\t src datadir      : \t %s\n",GetSrcDataDir());
+  if(printall) printf("\t target thickness : \t %.3f\n",GetTargetThickness());
+  if(printall) printf("\t target material  : \t %s\n",GetTargetMaterial());
+  if(printall) printf("\t run datadir      : \t %s\n",GetRunDataDir());
+  if(printall) printf("\t src datadir      : \t %s\n",GetSrcDataDir());
 }
 
 void TSharcInput::Clear(Option_t *opt) { 
@@ -57,10 +57,6 @@ void TSharcInput::Clear(Option_t *opt) {
   frundatadir.clear();     
   fsrcdatadir.clear();    
 }
-
-
-
-
 
 bool TSharcInput::InitSharcInput(const char *filename){
 
@@ -83,7 +79,7 @@ void TSharcInput::trim(std::string * line, const std::string trimChars) {
   return;
 }
 
-bool TSharcInput::ParseInputFile(const char *filename){
+Bool_t TSharcInput::ParseInputFile(const char *filename){
   //Makes TChannels from a cal file.
 
   if(!filename) {
@@ -167,6 +163,22 @@ bool TSharcInput::ParseInputFile(const char *filename){
             SetRunDataDir(line.c_str());
           } else if(type.compare("SRCDATADIR")==0){
             SetSrcDataDir(line.c_str());
+          } else if(type.compare("RUNDATA")==0){
+            AddRunData(line);
+          } else if(type.compare("SRCDATA")==0){
+            AddSrcData(line);
+          } else if(type.compare("FRONTCHARGEMINMAX")==0){
+            Double_t tempdouble[2]; 
+            ss>>tempdouble[0]; ss>>tempdouble[1];
+            SetFrontChargeMinMax(tempdouble[0],tempdouble[1]);
+          } else if(type.compare("BACKCHARGEMINMAX")==0){
+            Double_t tempdouble[2]; 
+            ss>>tempdouble[0]; ss>>tempdouble[1];
+            SetBackChargeMinMax(tempdouble[0],tempdouble[1]);
+          } else if(type.compare("PADCHARGEMINMAX")==0){
+            Double_t tempdouble[2]; 
+            ss>>tempdouble[0]; ss>>tempdouble[1];
+            SetPadChargeMinMax(tempdouble[0],tempdouble[1]);
          } 
        }
     }
@@ -178,8 +190,8 @@ bool TSharcInput::ParseInputFile(const char *filename){
 const char *TSharcInput::MakeOutputName(){
 
   char outname[256];
-  //UInt_t a = TSharcInput::GetA();
-  //sprintf(outname,"Cal_%iSr.root",GetA());
+  sprintf(outname,"Cal_%iSr.root",GetA());
+  std::string sname = outname;
 
-  return (const char *)outname;
+  return sname.c_str();
 }

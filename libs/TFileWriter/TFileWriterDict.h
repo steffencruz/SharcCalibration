@@ -31,7 +31,7 @@ extern void G__set_cpp_environmentTFileWriterDict();
 
 #include "TObject.h"
 #include "TMemberInspector.h"
-#include "/home/tiguser/packages/SharcCalibration/include/TFileWriter.h"
+#include "/Users/steffencruz/Desktop/Steffen/Work/PhD/TRIUMF/CodesAndTools/SharcCalibration/include/TFileWriter.h"
 #include <algorithm>
 namespace std { }
 using namespace std;

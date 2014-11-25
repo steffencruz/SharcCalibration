@@ -5,6 +5,8 @@
 #include <TNamed.h>
 #include <TVector3.h>
 
+
+// this class is the brains of the whole package. It is the only class containing specific values and settings
 class TSharcInput : public TNamed  { 
   public:
     TSharcInput();  // default  constructor.
@@ -32,7 +34,8 @@ class TSharcInput : public TNamed  {
     void SetTargetMaterial(const char *tmp) { ftargmat.assign(tmp)   ; }
     void SetRunDataDir(const char *tmp)     { frundatadir.assign(tmp); }
     void SetSrcDataDir(const char *tmp)     { fsrcdatadir.assign(tmp); }
-
+    void AddRunData(std::string tmp)        { frundata.push_back(tmp); }
+    void AddSrcData(std::string tmp)        { fsrcdata.push_back(tmp); }
 
     UInt_t GetZ()                   { return fprotons            ; }
     UInt_t GetN()                   { return fneutrons           ; }
@@ -42,7 +45,10 @@ class TSharcInput : public TNamed  {
     const char *GetRunDataDir()     { return frundatadir.c_str() ; }
     const char *GetSrcDataDir()     { return fsrcdatadir.c_str() ; }
 
-    static const char *MakeOutputName(void);
+    std::vector<std::string> GetRunData() { return frundata; }
+    std::vector<std::string> GetSrcData() { return fsrcdata; }
+    
+    const char *MakeOutputName();
 
     void SetRunChgMat(const char *tmp)   { frunchgmat.assign(tmp); }
     void SetSrcChgMat(const char *tmp)   { fsrcchgmat.assign(tmp); }
@@ -58,8 +64,19 @@ class TSharcInput : public TNamed  {
     std::string frundatadir;        // location of run data
     std::string fsrcdatadir;        // location of source data
 
+    std::vector<std::string> frundata;
+    std::vector<std::string> fsrcdata;
+
     std::string frunchgmat;        // location of run data charge matrix (if available)
     std::string fsrcchgmat;        // location of source data charge matrix (if available)
+
+    // settings to apply when looping over data
+    Double_t fFrontCharge_min;  // minimum front charge
+    Double_t fFrontCharge_max;  // maximum front charge
+    Double_t fBackCharge_min;  // "" back charge
+    Double_t fBackCharge_max;
+    Double_t fPadCharge_min;  // "" pad charge/
+    Double_t fPadCharge_max;
 
   ClassDef(TSharcInput,1)
 
