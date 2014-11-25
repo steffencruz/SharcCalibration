@@ -11,34 +11,37 @@ class TFitInfo : public TNamed {
 
   public:
     TFitInfo();
+    TFitInfo(TF1 *func,Float_t *xvals, Float_t *yvals, UInt_t npeaks, Bool_t flag=true); 
     virtual ~TFitInfo();
 
-    void Clear(Option_t *opt);
-    void Print(Option_t *opt);
+    void Clear(Option_t *opt = "");
+    void Print(Option_t *opt = "");
 
     //static TF1 *MakeChgSpec(const char *fun, Double_t *xpos=0, Double_t *ypos=0, UInt_t npeaks=1);
 
   public:
     Int_t GetNParm() { return fxvalues.size();}
 
-    void SetX(double &xvalue) { fxvalues.push_back(xvalue); }
-    void SetY(double &yvalue) { fxvalues.push_back(yvalue); }
-    void SetXY(double &xvalue,double &yvalue) { SetX(xvalue); SetY(yvalue); }
+    void SetX(Float_t &xvalue) { fxvalues.push_back(xvalue); }
+    void SetY(Float_t &yvalue) { fxvalues.push_back(yvalue); }
+    void SetXY(Float_t &xvalue,Float_t &yvalue) { SetX(xvalue); SetY(yvalue); }
 
-    Double_t GetX(int i) { return fxvalues.at(i); }
-    Double_t GetY(int i) { return fyvalues.at(i); }
+    Float_t GetX(int i) { return fxvalues.at(i); }
+    Float_t GetY(int i) { return fyvalues.at(i); }
+
+    void SetInfoName(const char *infoname = "");
 
     void SetStatus(bool flag) { fgood = flag; }
     bool Status() { return fgood; }
   
-    void SetFunction(TF1 &func) {ffunction = func; }
+    void SetFunction(TF1 *func) {ffunction = *func; }
     TF1 *GetFunction()          {return &ffunction; }
 
   private:
     bool fgood;
     TF1  ffunction;
-    std::vector<double> fxvalues;
-    std::vector<double> fyvalues;
+    std::vector<Float_t> fxvalues;
+    std::vector<Float_t> fyvalues;
 
   ClassDef(TFitInfo,1)
 };

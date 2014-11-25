@@ -33,6 +33,9 @@ LIBS += -lFitManager
 LIBS += -lObjectManager
 LIBS += -lSharcInput
 LIBS += -lSharcName
+# needed in order for TSpectrum (Spectrum) &TVector3 (TVector3) to work
+LIBS += -lSpectrum
+LIBS += -lPhysics
 
 SYSLIBS = #-ldl -lxml2
 

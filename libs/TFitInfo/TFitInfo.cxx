@@ -4,15 +4,42 @@
 
 #include <TF1.h>
 
+#include "Globals.h"
+
 //#include <TGRSIFunctions.h>
 
-
+ClassImp(TFitInfo);
 
 TFitInfo::TFitInfo() { }
 
+
 TFitInfo::~TFitInfo() { }
 
-void TFitInfo::Print(Option_t *opt) {}
+TFitInfo::TFitInfo(TF1 *func,Float_t *xvals, Float_t *yvals, UInt_t npeaks, Bool_t flag) { 
+  
+
+  for(int i=0; i<npeaks; i++){
+     SetXY(xvals[i],yvals[i]);
+  }
+  SetFunction(func);
+  SetStatus(flag);
+}
+
+void TFitInfo::SetInfoName(const char *infoname){
+
+  TNamed::SetName(infoname);
+  return;
+}
+
+void TFitInfo::Print(Option_t *opt) {
+  
+  printf(DCYAN);
+  printf("Name: %s\n",TNamed::GetName());
+  ffunction.Print();
+  printf(RESET_COLOR);
+  
+  return;
+}  
 
 void TFitInfo::Clear(Option_t *opt) {}
 

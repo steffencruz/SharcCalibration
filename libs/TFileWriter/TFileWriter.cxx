@@ -36,7 +36,7 @@ void TFileWriter::WriteList(TFile &file,TList *list, Option_t *opt){
 
 void TFileWriter::WriteFile(const char *fname, Option_t *opt) {
 
-  const char *outname = TSharcInput::MakeOutputName();
+  const char *outname = TSharcInput::Get()->MakeOutputName();
   TFile file(outname,opt);
 
   TSharcInput::Get()->Write(); // writes the input parameters

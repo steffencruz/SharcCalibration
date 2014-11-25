@@ -42,7 +42,7 @@ class TSharcInput : public TNamed  {
     const char *GetRunDataDir()     { return frundatadir.c_str() ; }
     const char *GetSrcDataDir()     { return fsrcdatadir.c_str() ; }
 
-    static const char *MakeOutputName(void);
+    const char *MakeOutputName(void);
 
     void SetRunChgMat(const char *tmp)   { frunchgmat.assign(tmp); }
     void SetSrcChgMat(const char *tmp)   { fsrcchgmat.assign(tmp); }

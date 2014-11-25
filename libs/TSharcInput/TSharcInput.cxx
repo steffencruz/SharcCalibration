@@ -178,8 +178,8 @@ bool TSharcInput::ParseInputFile(const char *filename){
 const char *TSharcInput::MakeOutputName(){
 
   char outname[256];
-  //UInt_t a = TSharcInput::GetA();
-  //sprintf(outname,"Cal_%iSr.root",GetA());
+  sprintf(outname,"Cal_%iSr.root",GetA());
+  std::string sname = outname;
 
-  return (const char *)outname;
+  return sname.c_str();
 }

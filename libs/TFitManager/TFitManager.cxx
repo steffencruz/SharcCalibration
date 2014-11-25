@@ -6,7 +6,11 @@
 #define PI = 3.141593
 #endif
 
+
 ClassImp(TFitManager);
+
+const char *TFitManager::fFitOpts  = "QR+";
+const char *TFitManager::fDispOpts = "";
 
 TFitManager::TFitManager() { }
 
@@ -15,18 +19,31 @@ TFitManager::~TFitManager() { }
 void TFitManager::Print(Option_t *opt) {};
 void TFitManager::Clear(Option_t *opt) {};
 
-TFitInfo *TFitManager::FitHist(TF1 *func, TH1D *h, Double_t *parms, UInt_t Nparms, Double_t xlow, Double_t xhigh){
 
+TFitInfo *TFitManager::FitHist(void *fcn, TH1D *h, Double_t *parms, UInt_t Nparms, Double_t xlow, Double_t xhigh, const char *fname){
+  // example void *fcn = TGSIFunctions::LanGaus
+  //
+  TF1 *func = new TF1(fname,fcn,xlow,xhigh,Nparms);
   func->SetParameters(parms);
-  h->Fit(func);//done.
 
+  h->Fit(func,fFitOpts,fDispOpts,xlow,xhigh);//done.
+
+  TSpectrum *spec = PeakSearch(h,1,100,0.5);
+  TFitInfo *tfi = new TFitInfo(func,spec->GetPositionX(),spec->GetPositionY(),spec->GetNPeaks(),true);
+
+  if(true)
+    tfi->Print();
+
+  return tfi;
 }
 
 
-TFitInfo *TFitManager::FitGraph(TF1 *func, TGraph *g, Double_t *parms, UInt_t Nparms, Double_t xlow, Double_t xhigh){
+TFitInfo *TFitManager::FitGraph(void *fcn, TGraph *g, Double_t *parms, UInt_t Nparms, Double_t xlow, Double_t xhigh, const char *fname){
 
+  TF1 *func = new TF1(fname,fcn,xlow,xhigh,Nparms);
   func->SetParameters(parms);
-  g->Fit(func);//done.
+
+  g->Fit(func,fFitOpts,fDispOpts,xlow,xhigh);//done.
 
 }
 
@@ -60,4 +77,5 @@ TSpectrum *TFitManager::PeakSearch(TH1D *h, UInt_t npeaks, Double_t resolution, 
 
   return s;
 }
+
 
