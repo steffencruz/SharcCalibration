@@ -16,16 +16,6 @@ class TSharcName : public TObject {
 
     virtual void Print(Option_t *opt = "");
     virtual void Clear(Option_t *opt = "");
-/*
-    static const char *GetChgMatName  (void)   {return fChgMatName;};
-    static const char *GetChgSpecName (void)   {return fChgSpecName;};
-    static const char *GetCalGraphName(void)   {return fCalGraphName;};
-    static const char *GetMulGraphName(void)   {return fMulGraphName;};
-    static const char *GetKinMatName  (void)   {return fKinMatName;};
-    static const char *GetKinResName  (void)   {return fKinResName;};
-    static const char *GetExcMatName  (void)   {return fExcMatName;};
-    static const char *GetExcSpecName (void)   {return fExcSpecName;};
-*/
 
     //Uncalibrated spectra cannot be grouped
     static const char *GetChgMatName(UInt_t det, UInt_t fs);
@@ -38,7 +28,7 @@ class TSharcName : public TObject {
     static const char *GetExcMatName(Int_t det=-1, Int_t fs=-1);
     static const char *GetExcSpecName(Int_t det=-1, Int_t fs=-1, Int_t bs=-1);
 
-    static const char *GetDirName(Int_t det=-1, Int_t fs=-1, Int_t bs = -1); 
+    static const char *GetListName(Int_t det=-1, Int_t fs=-1, Int_t bs = -1); 
 
   private:
    

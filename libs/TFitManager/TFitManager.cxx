@@ -24,11 +24,14 @@ TFitInfo *TFitManager::FitHist(void *fcn, TH1D *h, Double_t *parms, UInt_t Nparm
   // example void *fcn = TGSIFunctions::LanGaus
   //
   TF1 *func = new TF1(fname,fcn,xlow,xhigh,Nparms);
+
+  UInt_t npeaks = abs(parms[0]);
+  func->FixParameter(0,npeaks); // Fix number of peaks
   func->SetParameters(parms);
+  func->SetNpx(1000);
 
   h->Fit(func,fFitOpts,fDispOpts,xlow,xhigh);//done.
-
-  TSpectrum *spec = PeakSearch(h,1,100,0.5);
+  TSpectrum *spec = PeakSearch(h,npeaks,100,0.5);
   TFitInfo *tfi = new TFitInfo(func,spec->GetPositionX(),spec->GetPositionY(),spec->GetNPeaks(),true);
 
   if(true)

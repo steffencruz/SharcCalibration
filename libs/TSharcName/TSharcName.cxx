@@ -24,55 +24,55 @@ void TSharcName::Clear(Option_t *opt) {}
 
 // Uncalibrated data objects
 const char *TSharcName::GetChgMatName(UInt_t det, UInt_t fs){
-  std::string dirname = GetDirName(det,fs);
-  std::string name = dirname + fChgMatName;
+  std::string name = GetListName(det,fs);
+  name.append(fChgMatName.c_str());
   return name.c_str();
 }
 
 const char *TSharcName::GetChgSpecName(UInt_t det, UInt_t fs, UInt_t bs){
-  std::string dirname = GetDirName(det,fs,bs);
-  std::string name = dirname + fChgSpecName;
+  std::string name = GetListName(det,fs);
+  name.append(fChgSpecName.c_str());
   return name.c_str();
 }
 
 const char *TSharcName::GetCalGraphName(UInt_t det, UInt_t fs){
-  std::string dirname = GetDirName(det,fs);
-  std::string name = dirname + fCalGraphName;
+  std::string name = GetListName(det,fs);
+  name.append(fCalGraphName.c_str());
   return name.c_str();
 }
 
 const char *TSharcName::GetMulGraphName(UInt_t det, UInt_t fs){
-  std::string dirname = GetDirName(det,fs);
-  std::string name = dirname + fMulGraphName;
+  std::string name = GetListName(det,fs);
+  name.append(fMulGraphName.c_str());
   return name.c_str();
 }
 
 // Calibrated data objects 
 const char *TSharcName::GetKinMatName(Int_t det, Int_t fs){
-  std::string dirname = GetDirName(det,fs);
-  std::string name = dirname + fKinMatName;
+  std::string name = GetListName(det,fs);
+  name.append(fKinMatName.c_str());
   return name.c_str();
 }
 
 const char *TSharcName::GetResMatName(Int_t det, Int_t fs){
-  std::string dirname = GetDirName(det,fs);
-  std::string name = dirname + fResMatName;
+  std::string name = GetListName(det,fs);
+  name.append(fResMatName.c_str());
   return name.c_str();
 }
 
 const char *TSharcName::GetExcMatName(Int_t det, Int_t fs){
-  std::string dirname = GetDirName(det,fs);
-  std::string name = dirname + fExcMatName;
+  std::string name = GetListName(det,fs);
+  name.append(fExcMatName.c_str());
   return name.c_str();
 }
 
 const char *TSharcName::GetExcSpecName(Int_t det, Int_t fs, Int_t bs){
-  std::string dirname = GetDirName(det,fs,bs);
-  std::string name = dirname + fExcSpecName;
+  std::string name = GetListName(det,fs);
+  name.append(fExcSpecName.c_str());
   return name.c_str();
 }
 
-const char *TSharcName::GetDirName(Int_t det, Int_t fs, Int_t bs){
+const char *TSharcName::GetListName(Int_t det, Int_t fs, Int_t bs){
 
   char buffer[256];
   sprintf(buffer,"/Objects/"); // might be nice to have this structure to keep main directory tidy
@@ -83,6 +83,6 @@ const char *TSharcName::GetDirName(Int_t det, Int_t fs, Int_t bs){
   if(bs>0)
     sprintf(buffer,"%sBS%02i/",buffer,bs);
 
-  std::string dirname = buffer;
-  return dirname.c_str();
+  std::string name = buffer;
+  return name.c_str();
 }

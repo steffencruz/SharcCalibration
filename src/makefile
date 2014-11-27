@@ -15,6 +15,7 @@ INC = -I$(BASE)/include
 INC += -I$(MIDASSYS)/include
 
 LIBDIR = -L$(BASE)/libs
+LIBDIR += -L$(GRSISYS)/libraries
 #ifdef MIDASSYS
 #ifeq ($(PLATFORM),Darwin)
 #LIBDIR += -L$(MIDASSYS)/darwin/lib
@@ -37,6 +38,7 @@ LIBS += -lSharcName
 # needed in order for TSpectrum (Spectrum) &TVector3 (TVector3) to work
 LIBS += -lSpectrum
 LIBS += -lPhysics
+LIBS += -lGRSIFormat
 
 SYSLIBS = #-ldl -lxml2
 

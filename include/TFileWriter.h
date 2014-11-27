@@ -19,7 +19,7 @@ class TFileWriter : public TObject {
     virtual void Clear(Option_t *opt="");
 
     static void WriteList(TFile &file, TList *list, Option_t *opt = "");
-    static void WriteFile(const char *fname, Option_t *opt = "RECREATE");
+    static void WriteFile(const char *fname=0, Option_t *opt = "RECREATE");
 
   ClassDef(TFileWriter,0);
 };

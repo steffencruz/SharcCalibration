@@ -20,7 +20,7 @@ class TSharcInput : public TNamed  {
 
   private:
     static TSharcInput *fSharcInput;
-    TSharcInput(bool);
+    TSharcInput(Bool_t);
 
     void trim(std::string *line, const std::string trimchars = " \f\t\n\r\v");
     bool ParseInputFile(const char *);
@@ -51,10 +51,16 @@ class TSharcInput : public TNamed  {
     const char *GetTargetMaterial() { return ftargmat.c_str()    ; }
     const char *GetRunDataDir()     { return frundatadir.c_str() ; }
     const char *GetSrcDataDir()     { return fsrcdatadir.c_str() ; }
-
     std::vector<std::string> GetRunData() { return frundata; }
     std::vector<std::string> GetSrcData() { return fsrcdata; }
-    
+
+    Double_t GetFrontChargeMin()    { return fFrontCharge_min    ; }
+    Double_t GetFrontChargeMax()    { return fFrontCharge_max    ; }
+    Double_t GetBackChargeMin()     { return fBackCharge_min     ; }
+    Double_t GetBackChargeMax()     { return fBackCharge_max     ; }
+    Double_t GetPadChargeMin()      { return fPadCharge_min      ; }
+    Double_t GetPadChargeMax()      { return fPadCharge_max      ; }
+
     const char *MakeOutputName();
 
     void SetRunChgMat(const char *tmp)   { frunchgmat.assign(tmp); }
