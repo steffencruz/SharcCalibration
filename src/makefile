@@ -40,6 +40,11 @@ LIBS += -lSpectrum
 LIBS += -lPhysics
 LIBS += -lGRSIFormat
 
+LIBS += -lGRSIDetector
+LIBS += -lTigress
+LIBS += -lSharc
+LIBS += -lTriFoil
+
 SYSLIBS = #-ldl -lxml2
 
 #COMP_STRING="Now Compiling"

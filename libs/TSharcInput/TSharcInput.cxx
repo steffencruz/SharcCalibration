@@ -5,6 +5,9 @@
 #include "Globals.h"
 #include "TSharcInput.h"
 
+#include "TChannel.h"
+
+
 ClassImp(TSharcInput)
 
 TSharcInput *TSharcInput::fSharcInput = 0;
@@ -41,6 +44,7 @@ void TSharcInput::Print(Option_t *opt) {
   printf("\t beam Z : \t %i\n",GetZ());
   printf("\t beam N : \t %i\n",GetN());
 
+  if(printall) printf("\t calibration file : \t %s\n",GetCalFile());
   if(printall) printf("\t target thickness : \t %.3f\n",GetTargetThickness());
   if(printall) printf("\t target material  : \t %s\n",GetTargetMaterial());
   if(printall) printf("\t run datadir      : \t %s\n",GetRunDataDir());
@@ -59,8 +63,15 @@ void TSharcInput::Clear(Option_t *opt) {
 }
 
 bool TSharcInput::InitSharcInput(const char *filename){
-
-  return ParseInputFile(filename);
+  
+  bool input = ParseInputFile(filename);
+  if(!input)
+    return input;
+  
+  TChannel::ReadCalFile(GetCalFile());
+  if(TChannel::GetNumberOfChannels())
+    return true;
+  return  false;
 }
 
 void TSharcInput::trim(std::string * line, const std::string trimChars) {
@@ -80,7 +91,7 @@ void TSharcInput::trim(std::string * line, const std::string trimChars) {
 }
 
 Bool_t TSharcInput::ParseInputFile(const char *filename){
-  //Makes TChannels from a cal file.
+  //Make TChannels from a cal file.
 
   if(!filename) {
     printf("could not open file.\n");
@@ -147,6 +158,8 @@ Bool_t TSharcInput::ParseInputFile(const char *filename){
             c = toupper(c);
             type[j++] = c;
           }
+          trim(&type);
+          //printf("type[%s]:\t%s\n", type.c_str(),line.c_str());
 
           if(type.compare("Z")==0) {
             UInt_t tempint; ss>>tempint;
@@ -164,9 +177,11 @@ Bool_t TSharcInput::ParseInputFile(const char *filename){
           } else if(type.compare("SRCDATADIR")==0){
             SetSrcDataDir(line.c_str());
           } else if(type.compare("RUNDATA")==0){
-            AddRunData(line);
+            AddRunData(line.c_str());
           } else if(type.compare("SRCDATA")==0){
-            AddSrcData(line);
+            AddSrcData(line.c_str());
+          } else if(type.compare("CALFILE")==0){
+            SetCalFile(line.c_str());
           } else if(type.compare("FRONTCHARGEMINMAX")==0){
             Double_t tempdouble[2]; 
             ss>>tempdouble[0]; ss>>tempdouble[1];

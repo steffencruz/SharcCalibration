@@ -24,9 +24,10 @@ void TSharcName::Clear(Option_t *opt) {}
 
 // Uncalibrated data objects
 const char *TSharcName::GetChgMatName(UInt_t det, UInt_t fs){
-  std::string name = GetListName(det,fs);
-  name.append(fChgMatName.c_str());
-  return name.c_str();
+  static std::string chgmatname;
+  chgmatname.assign(GetListName(det,fs));
+  chgmatname.append(fChgMatName.c_str());
+  return chgmatname.c_str();
 }
 
 const char *TSharcName::GetChgSpecName(UInt_t det, UInt_t fs, UInt_t bs){
@@ -74,15 +75,14 @@ const char *TSharcName::GetExcSpecName(Int_t det, Int_t fs, Int_t bs){
 
 const char *TSharcName::GetListName(Int_t det, Int_t fs, Int_t bs){
 
-  char buffer[256];
-  sprintf(buffer,"/Objects/"); // might be nice to have this structure to keep main directory tidy
+  static char sharcnamebuffer[256];
+  sprintf(sharcnamebuffer,"/Objects/"); // might be nice to have this structure to keep main directory tidy
   if(det>0)
-    sprintf(buffer,"%sDET%02i/",buffer,det);
+    sprintf(sharcnamebuffer,"%sDET%02i/",sharcnamebuffer,det);
   if(fs>0)
-    sprintf(buffer,"%sFS%02i/",buffer,fs);
+    sprintf(sharcnamebuffer,"%sFS%02i/",sharcnamebuffer,fs);
   if(bs>0)
-    sprintf(buffer,"%sBS%02i/",buffer,bs);
+    sprintf(sharcnamebuffer,"%sBS%02i/",sharcnamebuffer,bs);
 
-  std::string name = buffer;
-  return name.c_str();
+  return (const char*)sharcnamebuffer;
 }

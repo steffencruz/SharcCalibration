@@ -13,8 +13,9 @@ void TCalibrate::Clear() { }
 
 void TCalibrate::DeltaCal() {
 // STEPS REQUIRED FOR BOTH RUN & SRC DATA
-  // Make charge matrices
-  fDataManager->MakeChargeMatrices();
+  // Make charge matrices 
+  CreateCalObjects(TSharcFormat::GetChgMatName()); // creates the empty charge matrices
+  fDataManager->MakeChargeMatrices();              // fills the charge matrices
   // Make charge spectra
   fDataManager->MakeChargeSpectra();
   // Fit charge spectra
@@ -22,7 +23,7 @@ void TCalibrate::DeltaCal() {
   // extract charge centroids
   fDataManager->MakeCentroidMats(); // TH2Fs are probably overkill for this purpose since there is a lot of overhead with TH2Fs [ = time + memory ]
   // calculate corresponding energies
-  fDataManager->MakeEnergyMats();   // same issue as above. Use array, or simpler structure?? TH2F is nice because we can look at it easily
+  fDataManager->MakeEnergyMats();   // in addition to the above comments about TH2F, we can set the bin error to be the centroid error ... noooooice 
   // make calgraphs
 
 // FROM THIS POINT ON WE DON'T DEAL WITH RUN & SRC DATA, JUST COMBINED DATA
@@ -54,12 +55,11 @@ UInt_t TCalibrate::InitDeltaCal(const char *ifname) {
 
   fObjectManager = TObjectManager::Get();
   fDataManager = TDataManager::Get();
-  CreateCalObjects(); // makes all necessary objects
   
   return 0;
 }
 
-void TCalibrate::CreateCalObjects(Int_t det_min, Int_t fs_min, Int_t bs_min, Int_t det_max, Int_t fs_max, Int_t bs_max) {
+void TCalibrate::SetUpCalObjects(const char *objtype, Int_t det_min, Int_t det_max, Int_t fs_min, Int_t fs_max) {
 
   if(det_min<0) det_min = 1 ;
   if(det_max<0) det_max = 16;
@@ -68,31 +68,30 @@ void TCalibrate::CreateCalObjects(Int_t det_min, Int_t fs_min, Int_t bs_min, Int
   if(bs_min<0)  bs_min  = 0 ;
   if(bs_max<0)  bs_max  = 48;
 
-//  std::string lName;
-//  TH2F *hChgMat;
+  TObject *obj;
   for(int DET=det_min; DET<det_max; DET++){
     for(int FS=fs_min; FS<fs_max; FS++){
-/*
-      lName.assign(TSharcName::GetListName(DET,FS));
-      fObjectManager->CreateList(lName.c_str());
-      hChgMat = fObjectManager->CreateChgMat(DET,FS);
-      fObjectManager->AddObjectToList(hChgMat,lName.c_str());
-*/   
 
-// I feel as though TObjectManager should put objectsthat it creates straight into lists 
       fObjectManager->CreateList(TSharcName::GetListName(DET,FS));
-      fObjectManager->CreateChgMat(TSharcName::GetChgMatName(DET,FS));
+      obj = fSharcFormat->CreateObject(objtype,DET,FS);
+      fObjectManager->AddObjectToList(obj,TSharcName::GetListName(DET,FS));
+      // done
+
+/*
+// I feel as though TObjectManager should put objectsthat it creates straight into lists 
       fObjectManager->CreateCalGraph(TSharcName::GetChgMatName(DET,FS));
       fObjectManager->CreateMulGraph(TSharcName::GetChgMatName(DET,FS));
       fObjectManager->CreateKinMat(TSharcName::GetChgMatName(DET,FS));
       fObjectManager->CreateResMat(TSharcName::GetChgMatName(DET,FS));
       fObjectManager->CreateExcMat(TSharcName::GetChgMatName(DET,FS));
-
+*/
+/*
       for(int BS=bs_max; BS<bs_max; BS++){
         fObjectManager->CreateChgSpec(TSharcName::GetChgMatName(DET,FS,BS));
         fObjectManager->CreateExcSpec(TSharcName::GetChgMatName(DET,FS,BS));
       }
-    }
+*/
+  }
   }
 
 }

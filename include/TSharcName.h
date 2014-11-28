@@ -7,7 +7,7 @@
 #include <Rtypes.h>
 #include <TObject.h>
 
-// Takes care of standardised naming conventions. Useful for structuring output files and easily accessing data
+// more useful copy of TSharcName, but with ability to apply standard formatting to names and histograms
 class TSharcName : public TObject {
 
   public:
@@ -22,7 +22,7 @@ class TSharcName : public TObject {
     static const char *GetChgSpecName(UInt_t det, UInt_t fs, UInt_t bs);
     static const char *GetCalGraphName(UInt_t det, UInt_t fs);
     static const char *GetMulGraphName(UInt_t det, UInt_t fs);
-    //Calibrated spectra can be grouped
+    //Calibrated spectra can be grouped (ie. plot different detectors together)
     static const char *GetKinMatName(Int_t det=-1, Int_t fs=-1);
     static const char *GetResMatName(Int_t det=-1, Int_t fs=-1);
     static const char *GetExcMatName(Int_t det=-1, Int_t fs=-1);

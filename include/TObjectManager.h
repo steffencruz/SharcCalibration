@@ -30,7 +30,6 @@ class TObjectManager : public TObject  {
     void CreateList(const char *listname);
 
     TObject *GetObject(const char *oname, const char *listname=0);
-
     TList *GetMasterList() { return fMasterList; }
 
   ClassDef(TObjectManager,1)

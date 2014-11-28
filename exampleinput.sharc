@@ -1,6 +1,8 @@
 nameless {
 
 // CALIRATION INFO              //////////////////////////////////////////////////////
+  CalFileDir           : /tig/grsmid01_data4/tigress/PeterSteffen/sr95/calfiles/
+  CalFile              : Empty.cal
   DeltaCalStyle        : Source Run // this will combine the data sets where available, and if one data set is present it will use that.
   PadCalStyle          : Run
 
@@ -21,7 +23,7 @@ nameless {
 // DATA PROCESSING INFO         //////////////////////////////////////////////////////
   // run
   rundatadir           : /tig/grsmid01_data4/tigress/PeterSteffen/sr95/
-  rundata              : analysis28991*
+  rundata              : analysis28991_000.root
   rundata              : analysis28992*
   
   // src
@@ -34,10 +36,6 @@ nameless {
 
   FrontChargeMinMax    : 200 20000
   BackChargeMinMax     : 200 20000
-  PadChargeMinMax      : 50  50000
-
-  // cal
-  calfiledir           : /tig/grsmid01_data4/tigress/PeterSteffen/sr95/calfiles/
-  calfile              : // examine a cal file by including it here?
+  PadChargeMinMax      : 0   50
 
 }

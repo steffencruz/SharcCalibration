@@ -25,16 +25,15 @@ class TSharcInput : public TNamed  {
     void trim(std::string *line, const std::string trimchars = " \f\t\n\r\v");
     bool ParseInputFile(const char *);
 
-  public:
-
     void SetZ(UInt_t &Z)                    { fprotons = Z           ; }
     void SetN(UInt_t &N)                    { fneutrons = N          ; }
     void SetTargetThickness(Double_t &tt)   { ftargthick = tt        ; }
     void SetTargetMaterial(const char *tmp) { ftargmat.assign(tmp)   ; }
     void SetRunDataDir(const char *tmp)     { frundatadir.assign(tmp); }
     void SetSrcDataDir(const char *tmp)     { fsrcdatadir.assign(tmp); }
-    void AddRunData(std::string tmp)        { frundata.push_back(tmp); }
-    void AddSrcData(std::string tmp)        { fsrcdata.push_back(tmp); }
+    void AddRunData(const char *tmp)        { frundata.push_back(tmp); }
+    void AddSrcData(const char *tmp)        { fsrcdata.push_back(tmp); }
+    void SetCalFile(const char *tmp)        { fcalfile.assign(tmp)   ; } 
 
     void SetFrontChargeMinMax(Double_t chgmin = 0.0, Double_t chgmax = 0.0) 
          {fFrontCharge_min = chgmin;  fFrontCharge_max = chgmax;}
@@ -43,7 +42,7 @@ class TSharcInput : public TNamed  {
     void SetPadChargeMinMax(Double_t chgmin = 0.0, Double_t chgmax = 0.0) 
          {fPadCharge_min = chgmin;  fPadCharge_max = chgmax;}
 
-    
+  public:
     UInt_t GetZ()                   { return fprotons            ; }
     UInt_t GetN()                   { return fneutrons           ; }
     UInt_t GetA()                   { return fprotons + fneutrons; }
@@ -51,8 +50,9 @@ class TSharcInput : public TNamed  {
     const char *GetTargetMaterial() { return ftargmat.c_str()    ; }
     const char *GetRunDataDir()     { return frundatadir.c_str() ; }
     const char *GetSrcDataDir()     { return fsrcdatadir.c_str() ; }
-    std::vector<std::string> GetRunData() { return frundata; }
-    std::vector<std::string> GetSrcData() { return fsrcdata; }
+    std::vector<std::string> GetRunData() { return frundata      ; }
+    std::vector<std::string> GetSrcData() { return fsrcdata      ; }
+    const char *GetCalFile()        { return fcalfile.c_str()     ; }
 
     Double_t GetFrontChargeMin()    { return fFrontCharge_min    ; }
     Double_t GetFrontChargeMax()    { return fFrontCharge_max    ; }
@@ -82,6 +82,8 @@ class TSharcInput : public TNamed  {
 
     std::string frunchgmat;        // location of run data charge matrix (if available)
     std::string fsrcchgmat;        // location of source data charge matrix (if available)
+
+    std::string fcalfile;
 
     // settings to apply when looping over data
     Double_t fFrontCharge_min;  // minimum front charge

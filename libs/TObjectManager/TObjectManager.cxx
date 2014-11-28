@@ -59,18 +59,15 @@ TObject *TObjectManager::GetObject(const char *oname, const char *listname) {
     list = fMasterList;
   else
     list = (TList*)fMasterList->FindObject(listname);
+
   if(!list) {
-    printf("{TObjectManager} Warning: list %s not found!!\n",listname);
+    printf("{TObjectManager} Warning :  list %s not found!!\n",listname);
     return obj;
   }
+
   obj = list->FindObject(oname);
   if(!obj) {
-    printf("Warning: object %s not found in list %s!!\n",oname,listname);
+    printf("{TObjectManager} Warning :  Object %s not found in list %s!!\n",oname,listname);
   }
   return obj;
 }
-
-
-
-
-

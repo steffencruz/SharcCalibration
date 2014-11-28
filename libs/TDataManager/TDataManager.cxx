@@ -110,21 +110,19 @@ void TDataManager::AddToChain(const char *tree, const char *dir){
 
 void TDataManager::ProcessData(Option_t *opt){
 
-   if(!fChain){
-      printf("{TDataManager} Warning :  chain not set.\n"); 
-      return;
-    }
-
-//FillOptions maybe contains things like index of first and last event to loop over. 
+  if(!fChain){
+     printf("{TDataManager} Warning :  chain not set.\n"); 
+     return;
+   }
   TStopwatch w;
 
-  UInt_t err, nentries = fChain->GetEntries();
-  for(int i=0; i<nentries; i++){
+  UInt_t i, err, nentries = fChain->GetEntries();
+  for(i=0; i<nentries; i++){
 	  
     err = fChain->GetEntry(i);
     if(!err)
        continue;
-    printf("i = %i\n",i);
+
     if(i%50000==0){
       printf(DYELLOW"\tProcessing event %i/%i [%.2f %%] in time %i minutes and %.1f seconds"RESET_COLOR"\r",i,nentries,(double)100*i/nentries,floor(w.RealTime()/60),fmod(w.RealTime(),60));
       fflush(stdout);
@@ -137,38 +135,32 @@ void TDataManager::ProcessData(Option_t *opt){
 	  FillHists();
   }
    
+  printf(DGREEN"\tProcessing event %i/%i [%.2f %%] in time %i minutes and %.1f seconds"RESET_COLOR"\n",i,nentries,(double)100*i/nentries,floor(w.RealTime()/60),fmod(w.RealTime(),60));
   return;
 }
 
 
 Bool_t TDataManager::ThrowEvent(Option_t *opt){
 
-    printf("HERE!\t fSharcHit = %p\tfSharc->GetMultiplicity() = %i\n",fSharc,fSharc->GetMultiplicity());
-    fflush(stdout);
-   if(fSharc->GetMultiplicity()>1)
+//  printf("fSharc->GetMultiplicity() = %i",fSharc->GetMultiplicity());
+   if(fSharc->GetMultiplicity()!=1)
       return true;
 
-   fSharcHit = fSharc->GetHit(0);
-   printf("channel = 0x%08x\t charge = %f\n",fSharcHit->GetFrontAddress(),fSharcHit->GetFrontCharge());
-   if(fFCsel){
-      TChannel *chan = TChannel::GetChannel(fSharcHit->GetFrontAddress());
-      fFrontCharge   = chan->CalibrateENG(fSharcHit->GetFrontCharge());
-      if (fFrontCharge<fFrontCharge_min || fFrontCharge>fFrontCharge_max)
-         return true;
-   }
+  fSharcHit = fSharc->GetHit(0);
+//  printf("\nsharc hit -> f_charge = %.2f\tback_charge = %.2f\tpad_charge = %.2f\n",fSharc->GetMultiplicity(),fSharcHit->GetFrontCharge()/25.0,fSharcHit->GetBackCharge()/25.0,fSharcHit->GetPadCharge()/125.0);
 
-   if(fBCsel){
-      TChannel *chan = TChannel::GetChannel(fSharcHit->GetBackAddress());
-      fBackCharge    = chan->CalibrateENG(fSharcHit->GetBackCharge());
-      if (fBackCharge<fBackCharge_min || fBackCharge>fBackCharge_max)
+  if(fFCsel)
+      if(fSharcHit->GetFrontCharge()/25.0<fFrontCharge_min || fSharcHit->GetFrontCharge()/25.0>fFrontCharge_max)
          return true;
-   }
-   if(fPCsel){
-      TChannel *chan = TChannel::GetChannel(fSharcHit->GetPadAddress());
-      fPadCharge     = chan->CalibrateENG(fSharcHit->GetPadCharge());
-      if (fPadCharge<fPadCharge_min || fPadCharge>fPadCharge_max)
+
+   if(fBCsel)
+      if (fSharcHit->GetBackCharge()/25.0<fBackCharge_min || fSharcHit->GetBackCharge()/25.0>fBackCharge_max)
          return true;
-   }
+  
+   if(fPCsel)
+      if (fSharcHit->GetPadCharge()/125.0<fPadCharge_min || fSharcHit->GetPadCharge()/125.0>fPadCharge_max)
+         return true;
+   
 // can also add tigress and trifoil cuts etc in this standardised way
 
    //apply other options
@@ -180,25 +172,22 @@ Bool_t TDataManager::ThrowEvent(Option_t *opt){
 void TDataManager::FillHists(Option_t *opt){
 
 //	TList *fList = mList->FindObject(TSharcName::GetListName(DET,FS));
-	TList *fList = (TList*) TObjectManager::Get()->GetObject(TSharcName::GetListName(fSharcHit->GetDetectorNumber(),fSharcHit->GetFrontStrip()));
+    if(fSharcHit->GetDetectorNumber()!=5 || fSharcHit->GetFrontStrip()!=12)
+       return;
+//	 How efficient is this? Will it be optimised by the compiler or should TDataManager just have a pointer to the master list? the time wasted making the DET_FS list will ikely be saved by the fact that object can be found way quicker within the smaller list
+  TList *fList = (TList*) TObjectManager::Get()->GetObject(TSharcName::GetListName(fSharcHit->GetDetectorNumber(),fSharcHit->GetFrontStrip()));
 	if(!fList){
-		printf("List not found\n");
+		printf("{TDataManager} Warning :  List '%s' not found\n",TSharcName::GetListName(fSharcHit->GetDetectorNumber(),fSharcHit->GetFrontStrip()));
 		return;
 	}
-	TIter iter(fList);
   TH2F *h;
-
-	while(TObject *obj = iter.Next()){
-		if(!obj->InheritsFrom("TH2F")) 
-			continue;
-
-		h = (TH2F*) obj;
-
-		if(fChgMat) // only makes charge matrix
-			h->Fill(fSharcHit->GetBackStrip(),fFrontCharge);
-
-		// fill charge matrices
+	if(fChgMat){ // go look for the appropiate charge matrix
+    h = (TH2F*) fList->FindObject(TSharcName::GetChgMatName(fSharcHit->GetDetectorNumber(),fSharcHit->GetFrontStrip()));
+		if(h){
+      h->Fill(fSharcHit->GetBackStrip(),fSharcHit->GetFrontCharge()/25.0);
+//      printf("HERRO I JUSPUT CHG[%.3f]_BS[%02i] IN '%s' !!!\n",fSharcHit->GetFrontCharge()/25.0,fSharcHit->GetBackStrip(),TSharcName::GetChgMatName(fSharcHit->GetDetectorNumber(),fSharcHit->GetFrontStrip()));
+    }
   }
-  
-	return;
+	
+  return;
 }

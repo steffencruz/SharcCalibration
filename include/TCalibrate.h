@@ -20,13 +20,14 @@ class TCalibration : TNamed {
     TCalibration *fCalibration;
     
     void InitCalibration();
-    void OpenCalibration();
+    void SetUpCalObjects(const char *objtype, Int_t det_min=-1, Int_t det_max=-1, Int_t fs_min=-1, Int_t fs_max=-1); // back strips not necessary as they are projections
+//    void OpenCalibration();
     void FinishCalibration();
 
   public:
     // I would love for this to be able to open a GUI that shows sharc statuses
-    void InspectDeltaCal();
-    void InspectPadCal();
+//    void InspectDeltaCal();
+//    void InspectPadCal();
 
   private:
     // Do we want ..?

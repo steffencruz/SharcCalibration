@@ -74,11 +74,6 @@ class TDataManager: public TNamed {
     Double_t fPadCharge_min;
     Double_t fPadCharge_max;
 
-    // It's more efficient to just store these because they require some calculation which needn't be repeated throughout the code
-    Double_t fFrontCharge;
-    Double_t fBackCharge;
-    Double_t fPadCharge;
-
   ClassDef(TDataManager,0);
 };
 
