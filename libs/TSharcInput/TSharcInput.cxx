@@ -6,7 +6,7 @@
 #include "TSharcInput.h"
 
 #include "TChannel.h"
-
+#include "TNucleus.h"
 
 ClassImp(TSharcInput)
 
@@ -40,9 +40,11 @@ void TSharcInput::Print(Option_t *opt) {
      printall = true;
 
   printf(DCYAN "TSharcInput:" RESET_COLOR "\n");
-  printf("\t beam A : \t %i\n",GetA());
-  printf("\t beam Z : \t %i\n",GetZ());
-  printf("\t beam N : \t %i\n",GetN());
+  printf("\t beam A           : \t %i\n",GetA());
+  printf("\t beam Z           : \t %i\n",GetZ());
+  printf("\t beam N           : \t %i\n",GetN());
+  printf("\t beam EperU       : \t %.3f MeV\n",GetBeamEperU());
+  printf("\t position offset  : \t [%.2f , %.2f , %.2f] \n",GetPosOffs().X(),GetPosOffs().Y(), GetPosOffs().Z());
 
   if(printall) printf("\t calibration file : \t %s\n",GetCalFile());
   if(printall) printf("\t target thickness : \t %.3f\n",GetTargetThickness());
@@ -71,8 +73,26 @@ bool TSharcInput::InitSharcInput(const char *filename){
   TChannel::ReadCalFile(GetCalFile());
   if(TChannel::GetNumberOfChannels())
     return true;
+
+// initialise some reaction stuff
+// if target==cd2, composition is c+d+p, decide this using target input?
+  fbeam = new TNucleus(GetZ(),GetN());
+  freaction[0] = new TKinematics(GetBeamEperU()*GetA(),"p",fbeam->GetSymbol(),fbeam->GetSymbol(),"p");
+  freaction[1] = new TKinematics(GetBeamEperU()*GetA(),"d",fbeam->GetSymbol(),fbeam->GetSymbol(),"d");
+  
   return  false;
 }
+
+TKinematics *TSharcInput::GetKinematics(Option_t *opt){
+  std::string ion = opt;
+  if(ion.compare("p")==0)
+     return freaction[0];
+  else if(ion.compare("d")==0)
+     return freaction[1];
+  else 
+     return 0;
+}
+
 
 void TSharcInput::trim(std::string * line, const std::string trimChars) {
   //Removes the the string "trimCars" from  the string 'line'
@@ -167,6 +187,13 @@ Bool_t TSharcInput::ParseInputFile(const char *filename){
           } else if(type.compare("N")==0) {
             UInt_t tempint; ss>>tempint;
             SetN(tempint);
+          } else if(type.compare("EPERU")==0) {
+            Double_t tempdouble; ss>>tempdouble;
+            SetBeamEperU(tempdouble);
+          } else if(type.compare("SHARCPOSOFFSETXYZ")==0) {
+            Double_t tempdouble[3]; 
+            ss>>tempdouble[0]; ss>>tempdouble[1]; ss>>tempdouble[2];
+            SetPosOffs(tempdouble[0],tempdouble[1],tempdouble[2]);
           } else if(type.compare("TARGETMATERIAL")==0){
             SetTargetMaterial(line.c_str());
           } else if(type.compare("TARGETTHICKNESS")==0){

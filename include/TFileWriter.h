@@ -8,7 +8,7 @@
 #include <TSharcInput.h>
 #include <TObjectManager.h>
 
-
+// this could become TFileManager so it opens files (existing calibration projects) too.
 class TFileWriter : public TObject {
 
   public:

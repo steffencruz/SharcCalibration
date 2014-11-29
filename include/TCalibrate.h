@@ -1,44 +1,63 @@
-#ifndef TCALIBRATION_H
-#define TCALIBRATION_H
+#ifndef TSHARCCALIBRATE_H
+#define TSHARCCALIBRATE_H
 
+#include <Rtypes.h>
+#include <TNamed.h>
+
+/*
+class TDataManager;
+class TFileWriter;
+class TFitInfo;
+class TFitManager;
+class TObjectManager;
+class TSharcInput;
+class TSharcFormat;
+*/
 // The user works directly with this class, which takes care of managing all the other classes 
     // Do we want this class to do both Delta and Pad calibrations?
-class TCalibration : TNamed {
+class TCalibrate : public TNamed {
 
   public:
-    TCalibration();
-    virtual ~TCalibration();
-
+    virtual ~TCalibrate();
+    static TCalibrate *Get();
     virtual void Print(Option_t *opt = "");    
     virtual void Clear(Option_t *opt = "");    
 
-    void DeltaCal();
-    void PadCal();
+    void DeltaCal(const char *ifname);
+//    void PadCal();
     
   private:
-    TCalibration(Bool_t);
-    TCalibration *fCalibration;
+    TCalibrate();
+    static TCalibrate *fCalibrate;
     
-    void InitCalibration();
-    void SetUpCalObjects(const char *objtype, Int_t det_min=-1, Int_t det_max=-1, Int_t fs_min=-1, Int_t fs_max=-1); // back strips not necessary as they are projections
+    Bool_t InitDeltaCal(const char *ifname);
+    void CreateCalObjects(const char *objtype, Int_t det_min=-1, Int_t det_max=-1, Int_t fs_min=-1, Int_t fs_max=-1); // back strips not necessary as they are projections
 //    void OpenCalibration();
-    void FinishCalibration();
+    void FinishDeltaCal();
 
   public:
     // I would love for this to be able to open a GUI that shows sharc statuses
 //    void InspectDeltaCal();
 //    void InspectPadCal();
-
+    const char *GetInputFile() { return fInputFile; }
+  
   private:
     // Do we want ..?
     // Do we also want a list of detectors/frontstrips to specify what to calibrate?
     // Do we also want calibration status?
-    Bool_t fDeltaSrc ;
-    Bool_t fDeltaRun ;
-    Bool_t fPadSrc   ;
-    Bool_t fPadRun   ;
+//    TDataManager   *fDataManager  ;
+//    TFileWriter    *fFileWriter   ;
+//    TFitInfo       *fFitInfo      ;
+//    TFitManager    *fFitManager   ;
+//    TObjectManager *fObjectManager;
+//    TSharcFormat   *fSharcFormat  ;
+//    TSharcInput    *fSharcInput   ;
 
-  ClassDef(TCalibrate,0);
+    const char *fInputFile;      
+    Bool_t fRunCal ;
+    Bool_t fSrcCal ;
+
+  ClassDef(TCalibrate,0)
 };
 
 #endif

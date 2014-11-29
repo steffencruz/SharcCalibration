@@ -24,8 +24,8 @@ class TTigressHit;
 #include<TSharcName.h>
 #include<TObjectManager.h>
 
-// If TSharcInput is the brains, this class is the muscle of the package. It handles looping over data, creating histograms and applying the TSharcInput user settings
-
+// If TSharcInput is the brains, this class is the brawns of the package. It handles looping over data, creating histograms and applying the TSharcInput user settings
+// No setters or getters, just MUSCLE!! locates & puts data into histograms.
 class TDataManager: public TNamed {
 
 	public:
@@ -37,15 +37,23 @@ class TDataManager: public TNamed {
 		virtual void Clear(Option_t *opt = "");
 		
     void ApplySharcInput(Option_t *opt = "");
-    void ProcessData(Option_t *opt = "");
-		void   FillHists(Option_t *opt = ""); 
-    Bool_t ThrowEvent(Option_t *opt = "");
 
-//    void FillEnergyMat(TH2F *h, UInt_t &det); // get expected kinematic energies using TSharcInput
+    void MakeChargeMats(Option_t *opt = "");
+    void MakeChargeSpectra(Option_t *opt = "");
+    void FitChargeSpectra(Option_t *opt = "");
+    void MakeCentroidMat(UInt_t DET, Option_t *opt = "");
+    void MakeCalcEnergyMat(UInt_t DET, Option_t *opt = "");
+    void MakeCalGraphs(Option_t *opt = "");
+
+    void CombineGraphs(Option_t *opt = "");
 
 	private:
 	  static TDataManager *fDataManager;
     TDataManager(Bool_t);
+
+    void ProcessData(Option_t *opt = "");
+		void   FillHists(Option_t *opt = ""); 
+    Bool_t ThrowEvent(Option_t *opt = "");
   
     static TSharc *fSharc;
 		static TTigress *fTigress;

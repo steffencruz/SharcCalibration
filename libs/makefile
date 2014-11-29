@@ -1,4 +1,4 @@
-SUBDIRS = TDataManager TFileWriter TFitInfo TFitManager TObjectManager TSharcInput TSharcName
+SUBDIRS = TCalibrate TDataManager TFileWriter TFitInfo TFitManager TObjectManager TSharcInput TSharcName
 ALLDIRS = $(SUBDIRS)
 
 .PHONY: subdirs $(ALLDIRS) clean

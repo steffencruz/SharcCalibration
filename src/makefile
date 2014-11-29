@@ -16,6 +16,7 @@ INC += -I$(MIDASSYS)/include
 
 LIBDIR = -L$(BASE)/libs
 LIBDIR += -L$(GRSISYS)/libraries
+LIBDIR += -L/home/tiguser/packages/SharcAnalysis
 #ifdef MIDASSYS
 #ifeq ($(PLATFORM),Darwin)
 #LIBDIR += -L$(MIDASSYS)/darwin/lib
@@ -28,7 +29,8 @@ ifndef __APPLE__
 LFLAGS = -Wl,--no-as-needed
 endif
 
-LIBS =  -lDataManager
+LIBS =  -lCalibrate
+LIBS += -lDataManager
 LIBS += -lFileWriter
 LIBS += -lFitInfo
 LIBS += -lFitManager
@@ -39,11 +41,13 @@ LIBS += -lSharcName
 LIBS += -lSpectrum
 LIBS += -lPhysics
 LIBS += -lGRSIFormat
-
+LIBS += -lNucleus
+LIBS += -lKinematics
 LIBS += -lGRSIDetector
 LIBS += -lTigress
 LIBS += -lSharc
 LIBS += -lTriFoil
+LIBS += -lSharcAnalysis
 
 SYSLIBS = #-ldl -lxml2
 

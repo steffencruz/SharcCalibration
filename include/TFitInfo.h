@@ -17,8 +17,6 @@ class TFitInfo : public TNamed {
     void Clear(Option_t *opt = "");
     void Print(Option_t *opt = "");
 
-    //static TF1 *MakeChgSpec(const char *fun, Double_t *xpos=0, Double_t *ypos=0, UInt_t npeaks=1);
-
   public:
     Int_t GetNParm() { return fxvalues.size();}
 

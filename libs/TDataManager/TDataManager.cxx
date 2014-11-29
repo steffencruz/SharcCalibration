@@ -7,6 +7,12 @@
 #include<TH2.h>
 #include<TStopwatch.h>
 
+#include <TFitInfo.h>
+#include <TSharcFormat.h>
+
+#include "TKinematics.h"
+#include "TSharcAnalysis.h"
+
 ClassImp(TDataManager);
 
 TDataManager *TDataManager::fDataManager = 0;
@@ -190,4 +196,68 @@ void TDataManager::FillHists(Option_t *opt){
   }
 	
   return;
+}
+
+
+
+void TDataManager::MakeChargeMats(Option_t *opt){
+  fChgMat = true;
+  ProcessData();
+}
+
+void TDataManager::MakeChargeSpectra(Option_t *opt){
+}
+
+void TDataManager::FitChargeSpectra(Option_t *opt){
+
+}
+
+void TDataManager::MakeCentroidMat(UInt_t DET, Option_t *opt){
+  
+  TObjectManager *om = TObjectManager::Get();
+  TFitInfo *tfi;
+  TH2F *h = (TH2F*)om->GetObject(TSharcFormat::GetCentMatName(true,DET),TSharcFormat::GetListName(DET));  // haha TRUE DET
+
+  for(int FS=0; FS<24; FS++){
+    for(int BS=0; BS<48; BS++){
+     
+      tfi = (TFitInfo*) om->GetObject(TSharcFormat::GetFitInfoName(true,DET,FS,BS),TSharcFormat::GetListName(DET,FS,BS));  // haha TRUE DET FSBS
+      if(tfi && tfi->Status()) // check that the spec
+        h->Fill(BS,FS,tfi->GetX(0));
+    }
+  }
+  return; 
+}
+ 
+void TDataManager::MakeCalcEnergyMat(UInt_t DET, Option_t *opt){
+  
+  TObjectManager *om = TObjectManager::Get();
+  TSharcInput *si = TSharcInput::Get();
+  TH2F *h = (TH2F*)om->GetObject(TSharcFormat::GetCentMatName(true,DET),TSharcFormat::GetListName(DET));  // haha TRUE DET
+  TVector3 position;
+  Double_t ekin;
+  std::vector<double> emeas;
+
+  for(int FS=0; FS<24; FS++){
+    for(int BS=0; BS<48; BS++){
+      
+      position = TSharc::GetPosition(DET,FS,BS,si->GetPosOffs().X(),si->GetPosOffs().Y(),si->GetPosOffs().Z());
+      ekin = ((TKinematics*) si->GetKinematics("p"))->ELab(position.Theta(),2);
+      emeas = TSharcAnalysis::GetMeasuredEnergy(DET,position,ekin,'p');
+      
+      h->Fill(BS,FS,emeas.at(0));
+      emeas.clear();
+    }
+  }
+
+  return; 
+
+}
+  
+void TDataManager::MakeCalGraphs(Option_t *opt){
+
+}
+
+void TDataManager::CombineGraphs(Option_t *opt){
+
 }
