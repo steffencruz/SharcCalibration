@@ -99,6 +99,13 @@ class TSharcInput : public TNamed  {
     Double_t fPadCharge_min;  // "" pad charge/
     Double_t fPadCharge_max;
 
+  // settings to apply when fitting charge spectra
+    std::string fRunChgSpecFunction; // type of fit to do
+    Double_t fRunChgSpecFitRange;    // range over which to fit
+    UInt_t fRunChgSpecNPeaks;        // number of peaks to search for and extract
+    Double_t fRunChgSpecRes;         // resolution of peaks... maybe unnecessary
+    Double_t fRunChgSpecThreshold;   // for TSpectrum, threshold used for peak search
+
   ClassDef(TSharcInput,1)
 
 };

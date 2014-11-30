@@ -39,7 +39,7 @@ void TCalibrate::DeltaCal(const char *ifname) {
      /////////////////////////////////// NEEDS ONLY TO BE DONE ONCE FOR A DATA SET /////////////////////////////////
      // 1.  Make charge matrices 
      CreateCalObjects(TSharcFormat::GetChgMatName()); // creates the empty charge matrices
-     dm->MakeChargeMats();              // fills the charge matrices
+     dm->FillChargeMats();              // fills the charge matrices
      // 2.  Make charge spectra
      dm->MakeChargeSpectra();
      // 3.  Fit charge spectra

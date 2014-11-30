@@ -38,14 +38,14 @@ class TDataManager: public TNamed {
 		
     void ApplySharcInput(Option_t *opt = "");
 
-    void MakeChargeMats(Option_t *opt = "");
-    void MakeChargeSpectra(Option_t *opt = "");
-    void FitChargeSpectra(Option_t *opt = "");
+    void FillChargeMats(Option_t *opt = "");
+    void MakeChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt = "");
+    void FitChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt = "");
     void MakeCentroidMat(UInt_t DET, Option_t *opt = "");
     void MakeCalcEnergyMat(UInt_t DET, Option_t *opt = "");
-    void MakeCalGraphs(Option_t *opt = "");
+    void MakeCalGraph(UInt_t DET, UInt_t FS, Option_t *opt = "");
 
-    void CombineGraphs(Option_t *opt = "");
+    void CombineGraphs(const char *g1name, const char *g2name, Option_t *opt = "");
 
 	private:
 	  static TDataManager *fDataManager;

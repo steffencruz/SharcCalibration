@@ -200,16 +200,48 @@ void TDataManager::FillHists(Option_t *opt){
 
 
 
-void TDataManager::MakeChargeMats(Option_t *opt){
+void TDataManager::FillChargeMats(Option_t *opt){
   fChgMat = true;
   ProcessData();
 }
 
-void TDataManager::MakeChargeSpectra(Option_t *opt){
+void TDataManager::MakeChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt){
+  
+  TObjectManager *om = TObjectManager::Get();
+  TH2F *h2 = (TH2F*)om->GetObject(TSharcFormat::GetChgMatName(true,DET,FS),TSharcFormat::GetListName(DET,FS,BS));
+  if(!h2){
+    printf("{TDataManager} Warning :  Could not find charge matrix '%s'.\n",TSharcFormat::GetChgMatName(true,DET,FS));
+    return;
+  }
+
+  TH1D *h1 = h2->ProjectionY(TSharcFormat::GetChgSpecName(true,DET,FS,BS),BS,BS); // project out charge matrix
+
+  if(!om->GetList(TSharcFormat::GetListName(DET,FS,BS)))
+    om->CreateList(TSharcFormat::GetListName(DET,FS,BS));
+
+  om->AddObjectToList(h1,TSharcFormat::GetListName(DET,FS,BS));
+
+  return;
 }
 
-void TDataManager::FitChargeSpectra(Option_t *opt){
+void TDataManager::FitChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt){
 
+  TObjectManager *om = TObjectManager::Get();
+  TSharcInput *si = TSharcInput::Get();
+
+  TH1D *h = (TH1D*)om->GetObject(TSharcFormat::GetChgMatSpec(true,DET,FS),TSharcFormat::GetListName(DET,FS,BS));
+  
+  TSpectrum *s = FitManager::PeakSearch(h,si->GetNRunPeaks(),si->GetRunRes(),si->GetRunThreshold());
+
+  Double_t fitrange = si->GetRunChgSpecFitRange();
+  const char *fname = si->GetRunChgSpecFunction();
+  std::vector<double> pars = TFitManager::GetParameters(fname,s);
+  std::vector<std:string> parnames = TFitManager::GetParNames(fname,si->GetNRunPeaks());
+  
+  TFitInfo *finfo = FitManager::FitHist((void*)fname,h,&pars[0],npars,fitrange[0],fitrange[1],fname,parnames);
+  
+  om->AddObjectToList(finfo,TSharcFormat::GetListName(DET,FS,BS));
+  return;
 }
 
 void TDataManager::MakeCentroidMat(UInt_t DET, Option_t *opt){
@@ -254,10 +286,10 @@ void TDataManager::MakeCalcEnergyMat(UInt_t DET, Option_t *opt){
 
 }
   
-void TDataManager::MakeCalGraphs(Option_t *opt){
+void TDataManager::MakeCalGraph(UInt_t DET, UInt_t FS, Option_t *opt){
 
 }
 
-void TDataManager::CombineGraphs(Option_t *opt){
+void TDataManager::CombineGraphs(const char *g1name,const char *g2name, Option_t *opt){
 
 }
