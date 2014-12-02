@@ -10,6 +10,8 @@
 
 ClassImp(TCalibrate)
 
+TCalibrate *TCalibrate::fCalibrate = 0;
+
 TCalibrate::TCalibrate() {
   fRunCal = true;
   fSrcCal = true;
@@ -19,9 +21,17 @@ TCalibrate::~TCalibrate() { }
 
 
 TCalibrate *TCalibrate::Get(){
-  if(fCalibrate)
-     return fCalibrate;
-  else TCalibrate();
+  if(!fCalibrate)
+    fCalibrate = new TCalibrate(true);
+  return fCalibrate;
+}
+
+TCalibrate::TCalibrate(Bool_t flag){
+  Clear();
+
+  fRunCal = true;
+  fSrcCal = true;
+  //other stuff
 }
 
 void TCalibrate::Print(Option_t *opt) { }
@@ -39,26 +49,38 @@ void TCalibrate::DeltaCal(const char *ifname) {
      /////////////////////////////////// NEEDS ONLY TO BE DONE ONCE FOR A DATA SET /////////////////////////////////
      // 1.  Make charge matrices 
      CreateCalObjects(TSharcFormat::GetChgMatName()); // creates the empty charge matrices
-     dm->FillChargeMats();              // fills the charge matrices
+     dm->FillChargeMats();                            // fills the charge matrices
      // 2.  Make charge spectra
-     dm->MakeChargeSpectra();
+     for(int DET=5;DET<=8;DET++)
+        for(int FS=0;FS<24;FS++)
+           for(int BS=0;BS<48;BS++)
+            dm->MakeChargeSpectrum(DET,FS,BS);
      // 3.  Fit charge spectra
-     dm->FitChargeSpectra();
+     for(int DET=5;DET<=8;DET++)
+        for(int FS=0;FS<24;FS++)
+           for(int BS=0;BS<48;BS++)
+            dm->FitChargeSpectrum(DET,FS,BS);
      // 4.  Extract charge centroids
      CreateCalObjects(TSharcFormat::GetCentMatName()); // creates the empty centroid matrices
-     for(int DET=5;DET<8;DET++)
+     for(int DET=5;DET<=8;DET++)
         dm->MakeCentroidMat(DET);  
 
     /////////////////////////////////// NEEDS TO BE DONE FOR EACH NEW PARAMETER SET ///////////////////////////////////
     // calculate corresponding energies
      CreateCalObjects(TSharcFormat::GetCalcMatName()); // creates the empty cacculated energy matrices
-     for(int DET=5;DET<8;DET++)
+     for(int DET=5;DET<=8;DET++)
        dm->MakeCalcEnergyMat(DET);   // in addition to the above comments about TH2F, we can set the bin error to be the centroid error ... noooooice 
      // make calgraphs
-     dm->MakeCalGraphs();
+     for(int DET=5;DET<=8;DET++)
+        for(int FS=0;FS<24;FS++)
+          dm->MakeCalGraph(DET,FS,"pol1");
+  
+     for(int DET=5;DET<=8;DET++)
+        for(int FS=0;FS<24;FS++)
+          dm->CombineGraphs(DET,FS,"pd"); // combine proton and deuteron points into a single graph
   }
 
-  if(fRunCal && fSrcCal)  dm->CombineGraphs(); // by default merges all TGraphErrors inside the DET FS BS list.
+//  if(fRunCal && fSrcCal)  dm->CombineGraphs(); // by default merges all TGraphErrors inside the DET FS BS list.
 
 // FROM THIS POINT ON WE DON'T DEAL WITH RUN & SRC DATA, JUST COMBINED DATA
   // fit calgraphs

@@ -18,6 +18,7 @@ class TSharcFormat;
 class TCalibrate : public TNamed {
 
   public:
+    TCalibrate();
     virtual ~TCalibrate();
     static TCalibrate *Get();
     virtual void Print(Option_t *opt = "");    
@@ -27,8 +28,8 @@ class TCalibrate : public TNamed {
 //    void PadCal();
     
   private:
-    TCalibrate();
     static TCalibrate *fCalibrate;
+    TCalibrate(Bool_t);
     
     Bool_t InitDeltaCal(const char *ifname);
     void CreateCalObjects(const char *objtype, Int_t det_min=-1, Int_t det_max=-1, Int_t fs_min=-1, Int_t fs_max=-1); // back strips not necessary as they are projections

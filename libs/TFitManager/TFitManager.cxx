@@ -20,7 +20,7 @@ void TFitManager::Print(Option_t *opt) {};
 void TFitManager::Clear(Option_t *opt) {};
 
 
-TFitInfo *TFitManager::FitHist(void *fcn, TH1D *h, Double_t *parms, UInt_t Nparms, Double_t xlow, Double_t xhigh, const char *fname, std::vector<std::string> parnames){
+TFitInfo *TFitManager::FitHist(void *fcn, TH1D *h, Double_t *parms, UInt_t Nparms, Double_t xlow, Double_t xhigh, const char *fname){
   // example void *fcn = TGSIFunctions::LanGaus
   //
   TF1 *func = new TF1(fname,fcn,xlow,xhigh,Nparms);
@@ -29,8 +29,9 @@ TFitInfo *TFitManager::FitHist(void *fcn, TH1D *h, Double_t *parms, UInt_t Nparm
   func->FixParameter(0,npeaks); // Fix number of peaks
   func->SetParameters(parms);
 
+  std::vector<std::string> parnames = GetParNames(fname,npeaks);
   for(int i=0; i<parnames.size(); i++)
-     func->SetParName(i,parnames.at(i).c_str();
+    func->SetParName(i,parnames.at(i).c_str();
 
   func->SetNpx(1000);
 
@@ -45,10 +46,9 @@ TFitInfo *TFitManager::FitHist(void *fcn, TH1D *h, Double_t *parms, UInt_t Nparm
 }
 
 
-TFitInfo *TFitManager::FitGraph(void *fcn, TGraph *g, Double_t *parms, UInt_t Nparms, Double_t xlow, Double_t xhigh, const char *fname){
+TFitInfo *TFitManager::FitGraph(const char *fcn, TGraph *g, Double_t xlow, Double_t xhigh, const char *fname){
 
   TF1 *func = new TF1(fname,fcn,xlow,xhigh,Nparms);
-  func->SetParameters(parms);
 
   g->Fit(func,fFitOpts,fDispOpts,xlow,xhigh);//done.
 
@@ -63,7 +63,7 @@ TSpectrum *TFitManager::PeakSearch(TH1D *h, UInt_t npeaks, Double_t resolution, 
   
   UInt_t npf = s->GetNPeaks();
   if(npf!=npeaks){
-    printf("\nERROR: Peak search failed! change axis range or detector resolution\n");
+    printf("\n{TFitManager} ERROR :  Peak search failed! change axis range or detector resolution\n");
     s->Clear(); // return enmpty spectrum
 //    h->GetListOfFunctions()->FindObject("TSpec")->Clear();// don't leave markers on plot
   }

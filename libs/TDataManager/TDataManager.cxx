@@ -203,6 +203,7 @@ void TDataManager::FillHists(Option_t *opt){
 void TDataManager::FillChargeMats(Option_t *opt){
   fChgMat = true;
   ProcessData();
+  fChgMat = false;
 }
 
 void TDataManager::MakeChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt){
@@ -236,9 +237,9 @@ void TDataManager::FitChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t 
   Double_t fitrange = si->GetRunChgSpecFitRange();
   const char *fname = si->GetRunChgSpecFunction();
   std::vector<double> pars = TFitManager::GetParameters(fname,s);
-  std::vector<std:string> parnames = TFitManager::GetParNames(fname,si->GetNRunPeaks());
+//  std::vector<std:string> parnames = TFitManager::GetParNames(fname,si->GetNRunPeaks());
   
-  TFitInfo *finfo = FitManager::FitHist((void*)fname,h,&pars[0],npars,fitrange[0],fitrange[1],fname,parnames);
+  TFitInfo *finfo = FitManager::FitHist((void*)fname,h,&pars[0],npars,fitrange[0],fitrange[1],fname);
   
   om->AddObjectToList(finfo,TSharcFormat::GetListName(DET,FS,BS));
   return;
@@ -287,9 +288,45 @@ void TDataManager::MakeCalcEnergyMat(UInt_t DET, Option_t *opt){
 }
   
 void TDataManager::MakeCalGraph(UInt_t DET, UInt_t FS, Option_t *opt){
+  
+  TObjectManager *om = TObjectManager::Get();
+  
+  TGraphErrors *g = (TGraphErrors*) om->GetObject(TSharcFormat::GetCalGraphName(true,DET,FS),TSharcFormat::GetListName(DET,FS));
+  if(!g || g->GetN()==0){
+     printf("{TDataManager} Warning :  Graph '%s' not found.\n",TSharcFormat::GetCalGraphName(true,DET,FS));
+     return;
+  }
 
+  TH2F *hchg = (TH2F*) om->GetObject(TSharcFormat::GetCentMatName(true,DET),TSharcFormat::GetListName(DET)); 
+  if(!hchg || hchg->Integral()==0){
+     printf("{TDataManager} Warning :  Centroid matrix '%s' not found.\n",TSharcFormat::GetCentMatName(true,DET));
+     return;
+  }
+  
+  TH2F *heng = (TH2F*) om->GetObject(TSharcFormat::GetCalcMatName(DET),TSharcFormat::GetListName(DET)); 
+  if(!heng || heng->Integral()==0){
+     printf("{TDataManager} Warning :  Calculated energy matrix '%s' not found.\n",TSharcFormat::GetCalcMatName(true,DET));
+     return;
+  }
+
+  for(int BS=0;BS<48;BS++){
+     if(hchg->GetBinContent(FS,BS)==0 || heng->GetBinContent(FS,BS)==0)
+        continue;
+     g->SetPoint(BS,hchg->GetBinContent(FS,BS),heng->GetBinContent(FS,BS));
+     g->SetPointError(BS,hchg->GetBinError(FS,BS),heng->GetBinError(FS,BS));
+  }
+
+  if(g->GetN()<3)
+     printf("{TDataManager} Warning :  There are %i points in '%s'.\n",g->GetN(),TSharcFormat::GetCalGraphName(true,DET,FS));
+
+  // Fit the graph
+  std::string fitopt = opt;
+  if(fitopt.compare("pol1")==0)
+     TFitManager::FitGraph("pol1",g);
+
+  return;
 }
 
-void TDataManager::CombineGraphs(const char *g1name,const char *g2name, Option_t *opt){
+void TDataManager::CombineGraphs(UInt_t DET, UInt_t FS, Option_t *opt){
 
 }
