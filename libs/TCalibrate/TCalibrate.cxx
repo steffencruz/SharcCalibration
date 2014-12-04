@@ -82,16 +82,17 @@ void TCalibrate::DeltaCal(const char *ifname) {
 
     /////////////////////////////////// NEEDS TO BE DONE FOR EACH NEW PARAMETER SET ///////////////////////////////////
     // calculate corresponding energies
-     CreateCalObjects(TSharcFormat::Get()->GetCalcMatName(),DET,DET); // creates the empty cacculated energy matrices
-//     for(int DET=5;DET<=8;DET++)
+     for(int DET=5;DET<=8;DET++)
+       CreateCalObjects(TSharcFormat::Get()->GetCalcMatName(),DET,DET); // creates the empty cacculated energy matrices
+     for(int DET=5;DET<=8;DET++)
        dm->MakeCalcEnergyMat(DET);   // in addition to the above comments about TH2F, we can set the bin error to be the centroid error ... noooooice 
      // make calgraphs
-//     for(int DET=5;DET<=8;DET++)
-//        for(int FS=0;FS<24;FS++)
+     for(int DET=5;DET<=8;DET++)
+        for(int FS=0;FS<24;FS++)
           dm->MakeCalGraph(DET,FS,"pol1");
-  
-//     for(int DET=5;DET<=8;DET++)
-//        for(int FS=0;FS<24;FS++)
+
+     for(int DET=5;DET<=8;DET++)
+        for(int FS=0;FS<24;FS++)
           dm->CombineGraphs(DET,FS,"pd"); // combine proton and deuteron points into a single graph
   }
 
