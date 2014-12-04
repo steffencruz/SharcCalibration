@@ -8,3 +8,8 @@ SharcCalibration
 
 WHERE ARE MY CALIBRATIONS???? 
 srsly
+
+
+also excitation energies... now. 
+
+

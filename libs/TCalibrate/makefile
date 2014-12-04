@@ -1,4 +1,3 @@
-
 OBJECTS = TCalibrate.o TCalibrateDict.o 
 
 CFLAGS += -fPIC

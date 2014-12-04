@@ -2,8 +2,13 @@
 
 #include <cstdio>
 
-
-
+#include <TCalibrate.h>
+#include <TDataManager.h>
+#include <TFitInfo.h>
+#include <TFitManager.h>
+#include <TFileWriter.h>
+#include <TObjectManager.h>
+#include <TSharcFormat.h>
 #include <TSharcInput.h>
 
 
@@ -13,19 +18,11 @@ int main(int argc, char **argv) {
 	
 	printf("srsly world ... again?\n");
 
-  if(!TSharcInput::Get()->InitSharcInput(argv[1]))
-     return 1;
-
-  TSharcInput::Get()->Print("a");
+  TCalibrate *cal = TCalibrate::Get();
+  cal->DeltaCal(argv[1]);
 	
   return 0;
 	
 }
 
-void SetOptions(){
-
-  
-
-  return;
-}
 

@@ -22,6 +22,7 @@ void TFileWriter::WriteList(TFile &file,TList *list, Option_t *opt){
     if(obj->InheritsFrom("TList")) {
       TList *currentlist = ((TList*)obj);
       const char *dname = currentlist->GetName();
+    //  printf("dname = %s \n",dname);
       if(!file.GetDirectory(dname)) {
         file.mkdir(dname);
       }

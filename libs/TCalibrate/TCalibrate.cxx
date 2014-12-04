@@ -8,6 +8,8 @@
 #include <TSharcInput.h>
 #include <TSharcFormat.h>
 
+#include "TSharcAnalysis.h"
+
 ClassImp(TCalibrate)
 
 TCalibrate *TCalibrate::fCalibrate = 0;
@@ -46,40 +48,54 @@ void TCalibrate::DeltaCal(const char *ifname) {
   }
   TDataManager *dm = TDataManager::Get();
   if(fRunCal){
+  //   int DET = 5;
+  //   int FS = 12;
      /////////////////////////////////// NEEDS ONLY TO BE DONE ONCE FOR A DATA SET /////////////////////////////////
-     // 1.  Make charge matrices 
-     CreateCalObjects(TSharcFormat::GetChgMatName()); // creates the empty charge matrices
+     // 1.  Make charge matrices
+     for(int DET=5;DET<=8;DET++)
+        for(int FS=0;FS<24;FS++)
+          CreateCalObjects(TSharcFormat::Get()->GetChgMatName(),DET,DET,FS,FS); // creates the empty charge matrices
+     
      dm->FillChargeMats();                            // fills the charge matrices
+    FinishDeltaCal(); 
      // 2.  Make charge spectra
      for(int DET=5;DET<=8;DET++)
         for(int FS=0;FS<24;FS++)
-           for(int BS=0;BS<48;BS++)
+           for(int BS=0;BS<4;BS++)
             dm->MakeChargeSpectrum(DET,FS,BS);
+    FinishDeltaCal(); 
+     
      // 3.  Fit charge spectra
      for(int DET=5;DET<=8;DET++)
         for(int FS=0;FS<24;FS++)
-           for(int BS=0;BS<48;BS++)
+           for(int BS=0;BS<4;BS++)
             dm->FitChargeSpectrum(DET,FS,BS);
+    FinishDeltaCal(); 
+     
      // 4.  Extract charge centroids
-     CreateCalObjects(TSharcFormat::GetCentMatName()); // creates the empty centroid matrices
+     printf("I AM HERE\n\n\n\n\n");
+     for(int DET=5;DET<=8;DET++)
+        CreateCalObjects(TSharcFormat::Get()->GetCentMatName(),DET ,DET); // creates the empty centroid matrices
      for(int DET=5;DET<=8;DET++)
         dm->MakeCentroidMat(DET);  
+    FinishDeltaCal(); 
 
     /////////////////////////////////// NEEDS TO BE DONE FOR EACH NEW PARAMETER SET ///////////////////////////////////
     // calculate corresponding energies
-     CreateCalObjects(TSharcFormat::GetCalcMatName()); // creates the empty cacculated energy matrices
-     for(int DET=5;DET<=8;DET++)
+     CreateCalObjects(TSharcFormat::Get()->GetCalcMatName(),DET,DET); // creates the empty cacculated energy matrices
+//     for(int DET=5;DET<=8;DET++)
        dm->MakeCalcEnergyMat(DET);   // in addition to the above comments about TH2F, we can set the bin error to be the centroid error ... noooooice 
      // make calgraphs
-     for(int DET=5;DET<=8;DET++)
-        for(int FS=0;FS<24;FS++)
+//     for(int DET=5;DET<=8;DET++)
+//        for(int FS=0;FS<24;FS++)
           dm->MakeCalGraph(DET,FS,"pol1");
   
-     for(int DET=5;DET<=8;DET++)
-        for(int FS=0;FS<24;FS++)
+//     for(int DET=5;DET<=8;DET++)
+//        for(int FS=0;FS<24;FS++)
           dm->CombineGraphs(DET,FS,"pd"); // combine proton and deuteron points into a single graph
   }
 
+  FinishDeltaCal();
 //  if(fRunCal && fSrcCal)  dm->CombineGraphs(); // by default merges all TGraphErrors inside the DET FS BS list.
 
 // FROM THIS POINT ON WE DON'T DEAL WITH RUN & SRC DATA, JUST COMBINED DATA
@@ -98,17 +114,23 @@ void TCalibrate::FinishDeltaCal() {
 }
 
 Bool_t TCalibrate::InitDeltaCal(const char *ifname) {
-
-  if(!TSharcInput::Get()->InitSharcInput(ifname)){
-    printf("{TCalibrate} Error : Input file '%s' not read.",ifname);
+  
+  TSharcInput *si = TSharcInput::Get();
+  if(!si->InitSharcInput(ifname)){
+    printf("{TCalibrate} Error : Input file '%s' not read.\n",ifname);
     return false;
   }
   fInputFile = ifname;
-  
+
+  TSharcAnalysis::SetTarget(si->GetTargetThickness());
+//  TSharcAnalysis::SetTargetMaterial(si->GetTargetMaterial());
+//  TSharcAnalysis::SetSharcOffset(si->GetPosOffs());
+
   return true;
 }
 
-void TCalibrate::CreateCalObjects(const char *objtype, Int_t det_min, Int_t det_max, Int_t fs_min, Int_t fs_max) {
+void TCalibrate::CreateCalObjects(const char *objname, Int_t det_min, Int_t det_max, Int_t fs_min, Int_t fs_max) {
+  // the looping functionality doesn't work because th epointers go out of scope.
 
   if(det_min<0) det_min = 1 ;
   if(det_max<0) det_max = 16;
@@ -117,12 +139,12 @@ void TCalibrate::CreateCalObjects(const char *objtype, Int_t det_min, Int_t det_
 
   TObjectManager *om = TObjectManager::Get();
   TObject *obj;
-  for(int DET=det_min; DET<det_max; DET++){
-    for(int FS=fs_min; FS<fs_max; FS++){
-
-      om->CreateList(TSharcName::GetListName(DET,FS));
-      obj = TSharcFormat::CreateObject(objtype,DET,FS);
-      om->AddObjectToList(obj,TSharcName::GetListName(DET,FS));
+  const char *objtype =  TSharcFormat::Get()->GetChgMatName();
+  for(int DET=det_min; DET<=det_max; DET++){
+    for(int FS=fs_min; FS<=fs_max; FS++){
+      om->CreateList(TSharcFormat::Get()->GetListName(DET,FS));
+      obj = TSharcFormat::Get()->CreateObject(objname,DET,FS);
+      om->AddObjectToList(obj,TSharcFormat::Get()->GetListName(DET,FS));
       // done
     }
   }
