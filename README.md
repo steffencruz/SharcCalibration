@@ -3,13 +3,13 @@ SharcCalibration
 -> Finish TSharcFormat and replace TSharcName with it                         
 -> Get TCalibrate up and running so that compiles                         
 -> Get TCalibrate to make charge matrices                         
--> Get TCalibrate to make and fit charge spectra                         
--> Get TCalibrate to make calibration graphs (run only)                         
+-> Make and fit charge spectra   
+-> Make centroid matrices
+-> Make energy calculated matrices
+-> Make calibration graphs (run only)     
+
 
 WHERE ARE MY CALIBRATIONS???? 
-srsly
-
-
 also excitation energies... now. 
 
 
