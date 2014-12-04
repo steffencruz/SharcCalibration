@@ -14,7 +14,7 @@ nameless {
 
 // BEAM AND TARGET INFO         //////////////////////////////////////////////////////
   Z                    : 38
-  N                    : 56
+  N                    : 57
   EperU                : 5.515        // MeV/u
   SharcPosOffsetXYZ    : 0.0 0.0 -1.2 // mm
   TargetThickness      : 4.5          // um
