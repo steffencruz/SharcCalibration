@@ -29,21 +29,23 @@ ifndef __APPLE__
 LFLAGS = -Wl,--no-as-needed
 endif
 
-LIBS =  -lCalibrate
+LIBS = -lSharcInput
+LIBS += -lSharcFormat
 LIBS += -lDataManager
 LIBS += -lFileWriter
 LIBS += -lFitInfo
 LIBS += -lFitManager
 LIBS += -lObjectManager
-LIBS += -lSharcInput
-LIBS += -lSharcName
+LIBS += -lCalibrate
 # needed in order for TSpectrum (Spectrum) &TVector3 (TVector3) to work
 LIBS += -lSpectrum
 LIBS += -lPhysics
 LIBS += -lGRSIFormat
 LIBS += -lNucleus
 LIBS += -lKinematics
+LIBS += -lSRIM
 LIBS += -lGRSIDetector
+LIBS += -lTGRSIFitter
 LIBS += -lTigress
 LIBS += -lSharc
 LIBS += -lTriFoil

@@ -15,7 +15,7 @@ TFitInfo::TFitInfo() { }
 
 TFitInfo::~TFitInfo() { }
 
-TFitInfo::TFitInfo(TF1 *func,Float_t *xvals, Float_t *yvals, UInt_t npeaks, Bool_t flag) { 
+TFitInfo::TFitInfo(TF1 *func,Double_t *xvals, Double_t *yvals, UInt_t npeaks, Bool_t flag) { 
   
 
   for(int i=0; i<npeaks; i++){

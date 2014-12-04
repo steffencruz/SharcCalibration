@@ -5,7 +5,14 @@
 #include <TNamed.h>
 #include <TVector3.h>
 
+#ifndef __CINT__
+#include "TNucleus.h"
 #include "TKinematics.h"
+#else 
+class TNucleus;
+class TKinematics;
+#endif
+
 
 // this class is the brains of the whole package. It is the only class containing specific values and settings
 class TSharcInput : public TNamed  { 
@@ -14,7 +21,8 @@ class TSharcInput : public TNamed  {
     static TSharcInput *Get();
     virtual ~TSharcInput();   
 
-    Bool_t InitSharcInput(const char*);
+    Bool_t InitSharcInput(const char *filename);
+    Bool_t InitSharcInput(void);
 
     virtual void Print(Option_t *opt = "");
     virtual void Clear(Option_t *opt = "");
@@ -24,8 +32,11 @@ class TSharcInput : public TNamed  {
   private:
     static TSharcInput *fSharcInput;
     TSharcInput(Bool_t);
+    
+    void PrintInput();
 
     void trim(std::string *line, const std::string trimchars = " \f\t\n\r\v");
+    Bool_t CopyInputFile(const char *);
     Bool_t ParseInputFile(const char *);
 
     void SetZ(UInt_t &Z)                                  { fprotons = Z               ; }
@@ -39,10 +50,15 @@ class TSharcInput : public TNamed  {
     void AddRunData(const char *tmp)                      { frundata.push_back(tmp)    ; }
     void AddSrcData(const char *tmp)                      { fsrcdata.push_back(tmp)    ; }
     void SetCalFile(const char *tmp)                      { fcalfile.assign(tmp)       ; } 
+    
+    void SetRunChgSpecFunction(const char *tmp)           { fRunChgSpecFitFunction = tmp  ; }
+    void SetRunChgSpecFitRange(Double_t chgmin, Double_t chgmax){ fRunChgSpecFitRange_min = chgmin; fRunChgSpecFitRange_max = chgmax; }
 
     void SetFrontChargeMinMax(Double_t chgmin, Double_t chgmax) { fFrontCharge_min = chgmin ; fFrontCharge_max = chgmax ; }
     void SetBackChargeMinMax(Double_t chgmin, Double_t chgmax)  { fBackCharge_min = chgmin  ; fBackCharge_max = chgmax  ; }
     void SetPadChargeMinMax(Double_t chgmin, Double_t chgmax)   { fPadCharge_min = chgmin   ; fPadCharge_max = chgmax   ; }
+
+    const char *GetData() { return fInfileData.c_str(); }
 
   public:
     UInt_t GetZ()                                         { return fprotons            ; }
@@ -50,6 +66,7 @@ class TSharcInput : public TNamed  {
     UInt_t GetA()                                         { return fprotons+fneutrons  ; }
     Double_t GetTargetThickness()                         { return ftargthick          ; }
     Double_t GetBeamEperU()                               { return feperu              ; }
+    const char *GetBeamSymbol()                           { return fbeam->GetSymbol()  ; }
     TVector3 GetPosOffs()                                 { return fposoff             ; }
     const char *GetTargetMaterial()                       { return ftargmat.c_str()    ; }
     const char *GetRunDataDir()                           { return frundatadir.c_str() ; }
@@ -57,6 +74,10 @@ class TSharcInput : public TNamed  {
     std::vector<std::string> GetRunData()                 { return frundata            ; }
     std::vector<std::string> GetSrcData()                 { return fsrcdata            ; }
     const char *GetCalFile()                              { return fcalfile.c_str()    ; }
+
+    Double_t GetRunChgSpecFitRangeMin()                   { return fRunChgSpecFitRange_min; }
+    Double_t GetRunChgSpecFitRangeMax()                   { return fRunChgSpecFitRange_max; }
+    const char *GetRunChgSpecFitFunction()                { return fRunChgSpecFitFunction.c_str() ; }
 
     Double_t GetFrontChargeMin()                          { return fFrontCharge_min    ; }
     Double_t GetFrontChargeMax()                          { return fFrontCharge_max    ; }
@@ -73,10 +94,14 @@ class TSharcInput : public TNamed  {
     const char *GetSrcChgMat()     { return fsrcchgmat.c_str()   ; }
 
   private:
+    std::string fInfileName;
+    std::string fInfileData;
+    
     UInt_t      fprotons;           // beam proton number
     UInt_t      fneutrons;          // beam neutron number
     Double_t    feperu;             // beam energy per u [MeV]
-    TKinematics freaction[3];       // kinematics of elastic channels
+    TNucleus    *fbeam;
+    TKinematics *freaction[3];       // kinematics of elastic channels
     TVector3    fposoff;            // sharc position offset
     Double_t    ftargthick;         // target thickness
     std::string ftargmat;           // target material
@@ -100,8 +125,9 @@ class TSharcInput : public TNamed  {
     Double_t fPadCharge_max;
 
   // settings to apply when fitting charge spectra
-    std::string fRunChgSpecFunction; // type of fit to do
-    Double_t fRunChgSpecFitRange;    // range over which to fit
+    Double_t fRunChgSpecFitRange_min;    // range over which to fit
+    Double_t fRunChgSpecFitRange_max;    
+    std::string fRunChgSpecFitFunction; // type of fit to do
     UInt_t fRunChgSpecNPeaks;        // number of peaks to search for and extract
     Double_t fRunChgSpecRes;         // resolution of peaks... maybe unnecessary
     Double_t fRunChgSpecThreshold;   // for TSpectrum, threshold used for peak search

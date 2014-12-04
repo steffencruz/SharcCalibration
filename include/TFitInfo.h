@@ -11,7 +11,7 @@ class TFitInfo : public TNamed {
 
   public:
     TFitInfo();
-    TFitInfo(TF1 *func,Float_t *xvals, Float_t *yvals, UInt_t npeaks, Bool_t flag=true); 
+    TFitInfo(TF1 *func, Double_t *xvals, Double_t *yvals, UInt_t npeaks, Bool_t flag=true); 
     virtual ~TFitInfo();
 
     void Clear(Option_t *opt = "");
@@ -20,12 +20,12 @@ class TFitInfo : public TNamed {
   public:
     Int_t GetNParm() { return fxvalues.size();}
 
-    void SetX(Float_t &xvalue) { fxvalues.push_back(xvalue); }
-    void SetY(Float_t &yvalue) { fxvalues.push_back(yvalue); }
-    void SetXY(Float_t &xvalue,Float_t &yvalue) { SetX(xvalue); SetY(yvalue); }
+    void SetX(Double_t &xvalue) { fxvalues.push_back(xvalue); }
+    void SetY(Double_t &yvalue) { fxvalues.push_back(yvalue); }
+    void SetXY(Double_t &xvalue,Double_t &yvalue) { SetX(xvalue); SetY(yvalue); }
 
-    Float_t GetX(int i) { return fxvalues.at(i); }
-    Float_t GetY(int i) { return fyvalues.at(i); }
+    Double_t GetX(int i) { return fxvalues.at(i); }
+    Double_t GetY(int i) { return fyvalues.at(i); }
 
     void SetInfoName(const char *infoname = "");
 
@@ -38,8 +38,8 @@ class TFitInfo : public TNamed {
   private:
     bool fgood;
     TF1  ffunction;
-    std::vector<Float_t> fxvalues;
-    std::vector<Float_t> fyvalues;
+    std::vector<Double_t> fxvalues;
+    std::vector<Double_t> fyvalues;
 
   ClassDef(TFitInfo,1)
 };

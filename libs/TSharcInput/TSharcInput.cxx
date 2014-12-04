@@ -31,10 +31,12 @@ TSharcInput::TSharcInput(bool flag) {
 
 TSharcInput::~TSharcInput() {  }
 
-
-
 void TSharcInput::Print(Option_t *opt) { 
 
+  if(strncmp(opt,"file",4)==0) {
+    PrintInput();
+    return;
+  }
   bool printall = false;
   if(strcmp(opt,"a")==0)
      printall = true;
@@ -53,6 +55,13 @@ void TSharcInput::Print(Option_t *opt) {
   if(printall) printf("\t src datadir      : \t %s\n",GetSrcDataDir());
 }
 
+void TSharcInput::PrintInput() {
+  printf("File(%s):\n",fInfileName.c_str());
+  printf("%s",fInfileData.c_str());
+  printf("\n");
+  return;
+}
+
 void TSharcInput::Clear(Option_t *opt) { 
    
   fprotons = 0;
@@ -65,11 +74,17 @@ void TSharcInput::Clear(Option_t *opt) {
 }
 
 bool TSharcInput::InitSharcInput(const char *filename){
-  
-  bool input = ParseInputFile(filename);
-  if(!input)
+
+  CopyInputFile(filename); 
+
+  bool input = ParseInputFile(GetData());
+  if(!input) {
+    Clear();
     return input;
-  
+  }
+ 
+  SetName(filename);
+
   TChannel::ReadCalFile(GetCalFile());
   if(TChannel::GetNumberOfChannels())
     return true;
@@ -77,11 +92,39 @@ bool TSharcInput::InitSharcInput(const char *filename){
 // initialise some reaction stuff
 // if target==cd2, composition is c+d+p, decide this using target input?
   fbeam = new TNucleus(GetZ(),GetN());
-  freaction[0] = new TKinematics(GetBeamEperU()*GetA(),"p",fbeam->GetSymbol(),fbeam->GetSymbol(),"p");
-  freaction[1] = new TKinematics(GetBeamEperU()*GetA(),"d",fbeam->GetSymbol(),fbeam->GetSymbol(),"d");
+
+  freaction[0] = new TKinematics(GetBeamEperU()*GetA(),"p",GetBeamSymbol(),GetBeamSymbol(),"p");
+  freaction[1] = new TKinematics(GetBeamEperU()*GetA(),"d",GetBeamSymbol(),GetBeamSymbol(),"d");
   
   return  false;
 }
+
+
+bool TSharcInput::InitSharcInput(){
+  if(fInfileData.length()<1)
+     return false;
+
+  bool input = ParseInputFile(GetData());
+  if(!input) {
+    Clear();
+    return input;
+  }
+ 
+  TChannel::ReadCalFile(GetCalFile());
+  if(TChannel::GetNumberOfChannels())
+    return true;
+
+// initialise some reaction stuff
+// if target==cd2, composition is c+d+p, decide this using target input?
+  fbeam = new TNucleus(GetZ(),GetN());
+
+  freaction[0] = new TKinematics(GetBeamEperU()*GetA(),"p",GetBeamSymbol(),GetBeamSymbol(),"p");
+  freaction[1] = new TKinematics(GetBeamEperU()*GetA(),"d",GetBeamSymbol(),GetBeamSymbol(),"d");
+  
+  return  false;
+}
+
+
 
 TKinematics *TSharcInput::GetKinematics(Option_t *opt){
   std::string ion = opt;
@@ -110,25 +153,50 @@ void TSharcInput::trim(std::string * line, const std::string trimChars) {
   return;
 }
 
-Bool_t TSharcInput::ParseInputFile(const char *filename){
+Bool_t TSharcInput::CopyInputFile(const char *filename){
+
+  if(!filename)
+     return false;
+  
+  std::ifstream infile;
+  infile.open(filename);
+  infile.seekg(0,std::ios::end);
+  int length = infile.tellg();
+  char buffer[length];
+
+  if(length<1)
+     return false;
+
+  infile.seekg(0,std::ios::beg);
+  infile.read(buffer,length);
+  
+  fInfileName.assign(filename);
+  fInfileData.assign(buffer);
+
+  return true;
+}
+
+Bool_t TSharcInput::ParseInputFile(const char *filedata){
   //Make TChannels from a cal file.
 
-  if(!filename) {
-    printf("could not open file.\n");
-    return false;
-  }
+  //if(!filename) {
+  //  printf("could not open file.\n");
+  //  return false;
+  //}
 
-  std::string infilename; 
-  infilename.append(filename);
-  if(infilename.length()==0)
-    return false;
+  //std::string infilename; 
+  //infilename.append(filename);
+  //if(infilename.length()==0)
+  //  return false;
 
-  ifstream infile;
-  infile.open(infilename.c_str());
-  if (!infile) {
-    printf("could not open file.\n");
-    return false;
-  }
+  //ifstream infile;
+  //infile.open(infilename.c_str());
+  //if (!infile) {
+  //  printf("could not open file.\n");
+  //  return false;
+  //}
+
+  std::istringstream infile(filedata);
 
   std::string line;
   int linenumber = 0;
@@ -209,6 +277,12 @@ Bool_t TSharcInput::ParseInputFile(const char *filename){
             AddSrcData(line.c_str());
           } else if(type.compare("CALFILE")==0){
             SetCalFile(line.c_str());
+          } else if(type.compare("RUNCHARGESPECFUNCTION")==0){
+            SetRunChgSpecFunction(line.c_str());
+          } else if(type.compare("RUNCHARGESPECFITRANGE")==0){
+            Double_t tempdouble[2]; 
+            ss>>tempdouble[0]; ss>>tempdouble[1];
+            SetRunChgSpecFitRange(tempdouble[0],tempdouble[1]);
           } else if(type.compare("FRONTCHARGEMINMAX")==0){
             Double_t tempdouble[2]; 
             ss>>tempdouble[0]; ss>>tempdouble[1];
@@ -237,3 +311,31 @@ const char *TSharcInput::MakeOutputName(){
 
   return sname.c_str();
 }
+
+
+
+
+
+
+void TSharcInput::Streamer(TBuffer &R__b) {
+
+  //make stuff read/write nice.... ooh, you read/write nice.
+  UInt_t R__s, R__c;
+  if(R__b.IsReading()) {  //reading.
+    Version_t R__v = R__b.ReadVersion(&R__s, &R__c); if (R__v) { }
+    TNamed::Streamer(R__b);
+    { TString R__str; R__str.Streamer(R__b); fInfileName = R__str.Data(); }
+    { TString R__str; R__str.Streamer(R__b); fInfileData = R__str.Data(); }
+    InitSharcInput();    
+    R__b.CheckByteCount(R__s, R__c, TSharcInput::IsA());
+  } else {                   //writing.
+    R__c = R__b.WriteVersion(TSharcInput::IsA(), kTRUE);
+    TNamed::Streamer(R__b);
+    { TString R__str = fInfileName.c_str(); R__str.Streamer(R__b);}
+    { TString R__str = fInfileData.c_str(); R__str.Streamer(R__b);}
+    R__b.SetByteCount(R__c, kTRUE);
+  }
+}
+
+
+
