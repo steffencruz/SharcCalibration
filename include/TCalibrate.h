@@ -32,8 +32,14 @@ class TCalibrate : public TNamed {
     TCalibrate(Bool_t);
     
     Bool_t InitDeltaCal(const char *ifname);
+    Bool_t OpenCalibration(const char* cfname);
+    void CreateCalObject(const char *objtype, Int_t det=-1, Int_t fs=-1);
     void CreateCalObjects(const char *objtype, Int_t det_min=-1, Int_t det_max=-1, Int_t fs_min=-1, Int_t fs_max=-1); // back strips not necessary as they are projections
-//    void OpenCalibration();
+    
+    void GetCentroidsFromData(Option_t *opt);
+    void GetEnergiesFromInput(Option_t *opt);
+    void ProduceCalGraphs(Option_t *opt);
+
     void FinishDeltaCal();
 
   public:
@@ -46,15 +52,9 @@ class TCalibrate : public TNamed {
     // Do we want ..?
     // Do we also want a list of detectors/frontstrips to specify what to calibrate?
     // Do we also want calibration status?
-//    TDataManager   *fDataManager  ;
-//    TFileWriter    *fFileWriter   ;
-//    TFitInfo       *fFitInfo      ;
-//    TFitManager    *fFitManager   ;
-//    TObjectManager *fObjectManager;
-//    TSharcFormat   *fSharcFormat  ;
-//    TSharcInput    *fSharcInput   ;
 
     const char *fInputFile;      
+    Bool_t fChgMats ;
     Bool_t fRunCal ;
     Bool_t fSrcCal ;
 

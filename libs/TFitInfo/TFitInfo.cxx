@@ -15,14 +15,14 @@ TFitInfo::TFitInfo() { }
 
 TFitInfo::~TFitInfo() { }
 
-TFitInfo::TFitInfo(TF1 *func,Double_t *xvals, Double_t *yvals, UInt_t npeaks, Bool_t flag) { 
+TFitInfo::TFitInfo(TF1 *func,Double_t *xvals, Double_t *yvals, UInt_t npeaks, Bool_t flag, const char *finame) { 
   
-
   for(int i=0; i<npeaks; i++){
      SetXY(xvals[i],yvals[i]);
   }
   SetFunction(func);
   SetStatus(flag);
+  SetName(finame);
 }
 
 void TFitInfo::SetInfoName(const char *infoname){

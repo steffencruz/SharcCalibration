@@ -7,6 +7,8 @@
 
 #include "TChannel.h"
 #include "TNucleus.h"
+#include "TKinematics.h"
+#include "TSharcAnalysis.h"
 
 ClassImp(TSharcInput)
 
@@ -77,7 +79,7 @@ bool TSharcInput::InitSharcInput(const char *filename){
 
   CopyInputFile(filename); 
 
-  bool input = ParseInputFile(GetData());
+  bool input = ParseInputFile(GetInfileData());
   if(!input) {
     Clear();
     return input;
@@ -85,55 +87,51 @@ bool TSharcInput::InitSharcInput(const char *filename){
  
   SetName(filename);
 
+  // might as well set the beam TNucleus
+  fbeam = new TNucleus(GetZ(),GetN());
+  
   TChannel::ReadCalFile(GetCalFile());
   if(TChannel::GetNumberOfChannels())
     return true;
-
-// initialise some reaction stuff
-// if target==cd2, composition is c+d+p, decide this using target input?
-  fbeam = new TNucleus(GetZ(),GetN());
-
-  freaction[0] = new TKinematics(GetBeamEperU()*GetA(),"p",GetBeamSymbol(),GetBeamSymbol(),"p");
-  freaction[1] = new TKinematics(GetBeamEperU()*GetA(),"d",GetBeamSymbol(),GetBeamSymbol(),"d");
   
-  return  false;
+  return false;
 }
-
 
 bool TSharcInput::InitSharcInput(){
   if(fInfileData.length()<1)
      return false;
 
-  bool input = ParseInputFile(GetData());
+  bool input = ParseInputFile(GetInfileData());
   if(!input) {
     Clear();
     return input;
   }
  
+  fbeam = new TNucleus(GetZ(),GetN());
   TChannel::ReadCalFile(GetCalFile());
   if(TChannel::GetNumberOfChannels())
     return true;
 
 // initialise some reaction stuff
 // if target==cd2, composition is c+d+p, decide this using target input?
-  fbeam = new TNucleus(GetZ(),GetN());
-
-  freaction[0] = new TKinematics(GetBeamEperU()*GetA(),"p",GetBeamSymbol(),GetBeamSymbol(),"p");
-  freaction[1] = new TKinematics(GetBeamEperU()*GetA(),"d",GetBeamSymbol(),GetBeamSymbol(),"d");
   
   return  false;
 }
 
+Double_t TSharcInput::GetBeamEnergyMidTarget(){ 
+  return TSharcAnalysis::GetBeamEnergyInTarget(GetA(),GetBeamEperU()); 
+}
 
-
-TKinematics *TSharcInput::GetKinematics(Option_t *opt){
-  std::string ion = opt;
-  if(ion.compare("p")==0)
-     return freaction[0];
-  else if(ion.compare("d")==0)
-     return freaction[1];
+TKinematics *TSharcInput::GetElasticKinematics(const char *ion, Option_t *opt){
+  
+  TNucleus *n = new TNucleus(ion);
+  TKinematics *kin;
+  if(!n)
+    kin = 0;
   else 
-     return 0;
+    kin = new TKinematics(GetBeamEnergyMidTarget(),GetBeamSymbol(),ion,ion,GetBeamSymbol());
+  
+  return kin;
 }
 
 
@@ -326,7 +324,8 @@ void TSharcInput::Streamer(TBuffer &R__b) {
     TNamed::Streamer(R__b);
     { TString R__str; R__str.Streamer(R__b); fInfileName = R__str.Data(); }
     { TString R__str; R__str.Streamer(R__b); fInfileData = R__str.Data(); }
-    InitSharcInput();    
+    InitSharcInput();   
+    fSharcInput = this;
     R__b.CheckByteCount(R__s, R__c, TSharcInput::IsA());
   } else {                   //writing.
     R__c = R__b.WriteVersion(TSharcInput::IsA(), kTRUE);

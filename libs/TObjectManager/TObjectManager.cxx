@@ -45,10 +45,11 @@ void TObjectManager::CreateList(const char *listname) {
 void TObjectManager::AddObjectToList(TObject *object, const char * listname) {
   TList *list = (TList*)fMasterList->FindObject(listname);
   if(!list) {
-    printf("{TObjectManager} Warning: list %s not found!!\n",listname);
+    printf("{TObjectManager} Warning: list '%s' not found!!\n",listname);
     return;
   }
   list->Add(object);
+  list->ls();
   return;
 }
 
@@ -61,13 +62,13 @@ TObject *TObjectManager::GetObject(const char *oname, const char *listname) {
     list = (TList*)fMasterList->FindObject(listname);
 
   if(!list) {
-    printf("{TObjectManager} Warning :  list %s not found!!\n",listname);
+    printf("{TObjectManager} Warning :  list '%s' not found!!\n",listname);
     return obj;
   }
-
+  //list->Print();
   obj = list->FindObject(oname);
   if(!obj) {
-    printf("{TObjectManager} Warning :  Object %s not found in list %s!!\n",oname,listname);
+    printf("{TObjectManager} Warning :  Object '%s' not found in list '%s'!!\n",oname,listname);
   }
   return obj;
 }

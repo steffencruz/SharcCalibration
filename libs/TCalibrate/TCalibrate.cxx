@@ -1,7 +1,7 @@
 #include "TCalibrate.h"
 
 #include <TDataManager.h>
-#include <TFileWriter.h>
+#include <TFileManager.h>
 #include <TFitInfo.h>
 #include <TFitManager.h>
 #include <TObjectManager.h>
@@ -30,8 +30,12 @@ TCalibrate *TCalibrate::Get(){
 
 TCalibrate::TCalibrate(Bool_t flag){
   Clear();
+//  flag = true; ///////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  if(flag)
+//     printf("{TCalibrate} MAKE CHARGE MATRIX = %s !\n",flag ? "true" : "false");
 
-  fRunCal = true;
+  fChgMats = flag;
+  fRunCal = false;
   fSrcCal = true;
   //other stuff
 }
@@ -42,61 +46,33 @@ void TCalibrate::Clear(Option_t *opt) { }
 
 void TCalibrate::DeltaCal(const char *ifname) {
 // STEPS REQUIRED FOR BOTH RUN & SRC DATA
-  if(!ifname || !InitDeltaCal(ifname)){
+
+  if(fChgMats)
+     printf("{TCalibrate} A file will be read in, so charge matrix will not be reproduced.\n");
+  else if(!ifname || !InitDeltaCal(ifname)){
      printf("{TCalibrate} Warning :  Bad input file, '%s'... You're better than this.\n",ifname);
      return;
   }
-  TDataManager *dm = TDataManager::Get();
+
   if(fRunCal){
-  //   int DET = 5;
-  //   int FS = 12;
-     /////////////////////////////////// NEEDS ONLY TO BE DONE ONCE FOR A DATA SET /////////////////////////////////
-     // 1.  Make charge matrices
-     for(int DET=5;DET<=8;DET++)
-        for(int FS=0;FS<24;FS++)
-          CreateCalObjects(TSharcFormat::Get()->GetChgMatName(),DET,DET,FS,FS); // creates the empty charge matrices
-     
-     dm->FillChargeMats();                            // fills the charge matrices
-    FinishDeltaCal(); 
-     // 2.  Make charge spectra
-     for(int DET=5;DET<=8;DET++)
-        for(int FS=0;FS<24;FS++)
-           for(int BS=0;BS<4;BS++)
-            dm->MakeChargeSpectrum(DET,FS,BS);
-    FinishDeltaCal(); 
-     
-     // 3.  Fit charge spectra
-     for(int DET=5;DET<=8;DET++)
-        for(int FS=0;FS<24;FS++)
-           for(int BS=0;BS<4;BS++)
-            dm->FitChargeSpectrum(DET,FS,BS);
-    FinishDeltaCal(); 
-     
-     // 4.  Extract charge centroids
-     printf("I AM HERE\n\n\n\n\n");
-     for(int DET=5;DET<=8;DET++)
-        CreateCalObjects(TSharcFormat::Get()->GetCentMatName(),DET ,DET); // creates the empty centroid matrices
-     for(int DET=5;DET<=8;DET++)
-        dm->MakeCentroidMat(DET);  
-    FinishDeltaCal(); 
-
-    /////////////////////////////////// NEEDS TO BE DONE FOR EACH NEW PARAMETER SET ///////////////////////////////////
-    // calculate corresponding energies
-     for(int DET=5;DET<=8;DET++)
-       CreateCalObjects(TSharcFormat::Get()->GetCalcMatName(),DET,DET); // creates the empty cacculated energy matrices
-     for(int DET=5;DET<=8;DET++)
-       dm->MakeCalcEnergyMat(DET);   // in addition to the above comments about TH2F, we can set the bin error to be the centroid error ... noooooice 
-     // make calgraphs
-     for(int DET=5;DET<=8;DET++)
-        for(int FS=0;FS<24;FS++)
-          dm->MakeCalGraph(DET,FS,"pol1");
-
-     for(int DET=5;DET<=8;DET++)
-        for(int FS=0;FS<24;FS++)
-          dm->CombineGraphs(DET,FS,"pd"); // combine proton and deuteron points into a single graph
+     Bool_t flag;
+    if(fChgMats) 
+       flag = OpenCalibration(ifname);
+    //TList *list = TObjectManager::Get()->GetMasterList();
+    //list->Print();
+    //list->ls();
+    if(!flag)
+      return;
+    GetCentroidsFromData("run");
+    GetEnergiesFromInput("run");
+ //   ProduceCalGraphs("run");
   }
 
-  FinishDeltaCal();
+  if(fSrcCal){
+    GetCentroidsFromData("src");
+    GetEnergiesFromInput("src");
+ //   ProduceCalGraphs("src");
+  }
 //  if(fRunCal && fSrcCal)  dm->CombineGraphs(); // by default merges all TGraphErrors inside the DET FS BS list.
 
 // FROM THIS POINT ON WE DON'T DEAL WITH RUN & SRC DATA, JUST COMBINED DATA
@@ -109,9 +85,113 @@ void TCalibrate::DeltaCal(const char *ifname) {
   
 }
 
+void TCalibrate::GetCentroidsFromData(Option_t *opt){
+
+  TDataManager *dm = TDataManager::Get();
+  /////////////////////////////////// NEEDS ONLY TO BE DONE ONCE FOR A DATA SET /////////////////////////////////
+  // 1.  Make charge matrices
+  for(int DET=5;DET<=8;DET++)
+     for(int FS=0;FS<24;FS++)
+       CreateCalObject(TSharcFormat::Get()->GetChgMatName(),DET,FS); // creates the empty charge matrices
+  dm->FillChargeMats();                            // fills the charge matrices
+
+  FinishDeltaCal(); 
+  
+  // 2.  Make charge spectra
+  for(int DET=5;DET<=8;DET++)
+     for(int FS=0;FS<24;FS++)
+        for(int BS=0;BS<48;BS++)
+         dm->MakeChargeSpectrum(DET,FS,BS,opt);
+  
+  FinishDeltaCal(); 
+  
+  // 3.  Fit charge spectra
+  for(int DET=5;DET<=8;DET++)
+     for(int FS=0;FS<24;FS++)
+        for(int BS=0;BS<48;BS++)
+         dm->FitChargeSpectrum(DET,FS,BS,opt);
+  
+  FinishDeltaCal(); 
+  
+  // 4.  Extract charge centroids
+  for(int DET=5;DET<=8;DET++)
+     CreateCalObject(TSharcFormat::Get()->GetCentMatName(),DET); // creates the empty centroid matrices
+  
+  for(int DET=5;DET<=8;DET++)
+     dm->MakeCentroidMat(DET);  
+  
+  FinishDeltaCal(); 
+
+  return;
+}
+
+void TCalibrate::GetEnergiesFromInput(Option_t *opt){ 
+
+  TDataManager *dm = TDataManager::Get();
+   /////////////////////////////////// NEEDS TO BE DONE FOR EACH NEW PARAMETER SET ///////////////////////////////////
+   // calculate corresponding energies
+   for(int DET=5;DET<=8;DET++)
+     CreateCalObject(TSharcFormat::Get()->GetCalcMatName(),DET); // creates the empty calculated energy matrices
+   
+   for(int DET=5;DET<=8;DET++)
+     dm->MakeCalcEnergyMat(DET,opt);   // in addition to the above comments about TH2F, we can set the bin error to be the centroid error ... noooooice 
+
+  FinishDeltaCal(); 
+  return;
+  
+}
+
+void TCalibrate::ProduceCalGraphs(Option_t *opt){
+  
+printf("\n\nHERE 1\n");  
+  TDataManager *dm = TDataManager::Get();
+  for(int DET=5;DET<=8;DET++)
+     for(int FS=0;FS<24;FS++)
+       CreateCalObject(TSharcFormat::Get()->GetCalGraphName(),DET,FS);
+printf("\n\nHERE 2\n");  
+  // make calgraphs
+  for(int DET=5;DET<=8;DET++)
+     for(int FS=0;FS<24;FS++)
+       dm->MakeCalGraph(DET,FS,"pol1");
+
+
+printf("\n\nHERE 3\n");  
+  for(int DET=5;DET<=8;DET++)
+     for(int FS=0;FS<24;FS++)
+       CreateCalObject(TSharcFormat::Get()->GetMulGraphName(),DET,FS);
+  
+printf("\n\nHERE 4\n");  
+  for(int DET=5;DET<=8;DET++)
+     for(int FS=0;FS<24;FS++)
+       dm->CombineGraphs(DET,FS,"pd"); // combine proton and deuteron points into a single graph
+
+  FinishDeltaCal(); 
+  return;
+}
+
+Bool_t TCalibrate::OpenCalibration(const char* cfname){
+
+  TObjectManager *om = TObjectManager::Get();
+
+  if(om->GetMasterList()->GetEntries()>0){
+     printf("{TCalibrate} Warning :  There are already calibration objects. Calibration data may be loaded only when there are none.\n");
+     return false;
+  }
+
+  TSharcInput *si = TSharcInput::Get();
+  std::string siname = si->GetName();
+  if(siname.length()){
+    printf("{TCalibrate} Warning :  There is already a TSharcInput instance, '%s'. Another calibration cannot be loaded right now.\n",si->GetName());
+    return false;
+  }
+  
+  return TFileManager::ReadFile(cfname);
+}
+
+
 void TCalibrate::FinishDeltaCal() {
 
-  TFileWriter::WriteFile(); // uses TSharcName output file convention and writes TObjectManager's master list
+  TFileManager::WriteFile(); // uses TSharcName output file convention and writes TObjectManager's master list
 }
 
 Bool_t TCalibrate::InitDeltaCal(const char *ifname) {
@@ -130,14 +210,33 @@ Bool_t TCalibrate::InitDeltaCal(const char *ifname) {
   return true;
 }
 
-void TCalibrate::CreateCalObjects(const char *objname, Int_t det_min, Int_t det_max, Int_t fs_min, Int_t fs_max) {
+void TCalibrate::CreateCalObject(const char *objname, Int_t DET, Int_t FS) {
   // the looping functionality doesn't work because th epointers go out of scope.
 
+  TObjectManager *om = TObjectManager::Get();
+  TSharcFormat *sf = TSharcFormat::Get();
+  TObject *obj;
+  if(DET>=0 && FS>=0){
+    if(!om->GetObject(sf->GetListName(DET,FS)))
+       om->CreateList(sf->GetListName(DET,FS));
+    obj = sf->CreateObject(objname,DET,FS);
+    om->AddObjectToList(obj,sf->GetListName(DET,FS));
+  } else if(DET>=0){
+    if(!om->GetObject(sf->GetListName(DET)))
+      om->CreateList(sf->GetListName(DET));
+    obj = sf->CreateObject(objname,DET);
+    om->AddObjectToList(obj,sf->GetListName(DET));
+  }
+
+  printf("-> I Just made \t%s\t :]\n",obj->GetName());
+}
+
+void TCalibrate::CreateCalObjects(const char *objname, Int_t det_min, Int_t det_max, Int_t fs_min, Int_t fs_max) {
+  // the looping functionality doesn't work because th epointers go out of scope.
   if(det_min<0) det_min = 1 ;
   if(det_max<0) det_max = 16;
   if(fs_min<0)  fs_min  = 0 ;
   if(fs_max<0)  fs_max  = 24;
-
   TObjectManager *om = TObjectManager::Get();
   TObject *obj;
   const char *objtype =  TSharcFormat::Get()->GetChgMatName();

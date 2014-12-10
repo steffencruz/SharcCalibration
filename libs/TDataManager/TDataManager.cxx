@@ -272,10 +272,10 @@ void TDataManager::MakeCentroidMat(UInt_t DET, Option_t *opt){
   TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetCentMatName(true,DET),TSharcFormat::Get()->GetListName(DET));  // haha TRUE DET
 
   for(int FS=0; FS<24; FS++){
-    for(int BS=0; BS<48; BS++){
+    for(int BS=0; BS<8; BS++){
      
       tfi = (TFitInfo*) om->GetObject(TSharcFormat::Get()->GetFitInfoName(true,DET,FS,BS),TSharcFormat::Get()->GetListName(DET,FS,BS));  // haha TRUE DET FSBS
-      if(tfi && tfi->Status()) // check that the spec
+      if(tfi && tfi->Status()) // check that the spectrum was fit
         h->Fill(BS,FS,tfi->GetX(0));
     }
   }
@@ -286,23 +286,24 @@ void TDataManager::MakeCalcEnergyMat(UInt_t DET, Option_t *opt){
   
   TObjectManager *om = TObjectManager::Get();
   TSharcInput *si = TSharcInput::Get();
-  TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetCentMatName(true,DET),TSharcFormat::Get()->GetListName(DET));  // haha TRUE DET
+  TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetCalcMatName(true,DET),TSharcFormat::Get()->GetListName(DET));  // haha TRUE DET
   TVector3 position;
   Double_t ekin;
   std::vector<double> emeas;
 
   for(int FS=0; FS<24; FS++){
-    for(int BS=0; BS<48; BS++){
+    for(int BS=0; BS<8; BS++){
       
       position = TSharc::GetPosition(DET,FS,BS,si->GetPosOffs().X(),si->GetPosOffs().Y(),si->GetPosOffs().Z());
-      ekin = ((TKinematics*) si->GetKinematics("p"))->ELab(position.Theta(),2);
+      TKinematics *kin =  si->GetElasticKinematics("p");
+      ekin = kin->ELab(position.Theta(),2);
       emeas = TSharcAnalysis::GetMeasuredEnergy(position,DET,ekin,'p');
       
-      h->Fill(BS,FS,emeas.at(0));
+      h->Fill(FS,BS,emeas.at(0));
       emeas.clear();
     }
   }
-
+  h->Print();
   return; 
 
 }
@@ -310,22 +311,23 @@ void TDataManager::MakeCalcEnergyMat(UInt_t DET, Option_t *opt){
 void TDataManager::MakeCalGraph(UInt_t DET, UInt_t FS, Option_t *opt){
   
   TObjectManager *om = TObjectManager::Get();
-  
-  TGraphErrors *g = (TGraphErrors*) om->GetObject(TSharcFormat::Get()->GetCalGraphName(true,DET,FS),TSharcFormat::Get()->GetListName(DET,FS));
+  TSharcFormat *sf = TSharcFormat::Get(); 
+  ((TList*)om->GetObject(sf->GetListName(DET,FS)))->ls();
+  TGraphErrors *g = (TGraphErrors*) om->GetObject(sf->GetCalGraphName(true,DET,FS),sf->GetListName(DET,FS));
   if(!g || g->GetN()==0){
-     printf("{TDataManager} Warning :  Graph '%s' not found.\n",TSharcFormat::Get()->GetCalGraphName(true,DET,FS));
+     printf("{TDataManager} Warning :  Graph '%s' not found.\n",sf->GetCalGraphName(true,DET,FS));
      return;
   }
 
-  TH2F *hchg = (TH2F*) om->GetObject(TSharcFormat::Get()->GetCentMatName(true,DET),TSharcFormat::Get()->GetListName(DET)); 
+  TH2F *hchg = (TH2F*) om->GetObject(sf->GetCentMatName(true,DET),sf->GetListName(DET)); 
   if(!hchg || hchg->Integral()==0){
-     printf("{TDataManager} Warning :  Centroid matrix '%s' not found.\n",TSharcFormat::Get()->GetCentMatName(true,DET));
+     printf("{TDataManager} Warning :  Centroid matrix '%s' not found.\n",sf->GetCentMatName(true,DET));
      return;
   }
   
-  TH2F *heng = (TH2F*) om->GetObject(TSharcFormat::Get()->GetCalcMatName(DET),TSharcFormat::Get()->GetListName(DET)); 
+  TH2F *heng = (TH2F*) om->GetObject(sf->GetCalcMatName(DET),sf->GetListName(DET)); 
   if(!heng || heng->Integral()==0){
-     printf("{TDataManager} Warning :  Calculated energy matrix '%s' not found.\n",TSharcFormat::Get()->GetCalcMatName(true,DET));
+     printf("{TDataManager} Warning :  Calculated energy matrix '%s' not found.\n",sf->GetCalcMatName(true,DET));
      return;
   }
 
@@ -335,9 +337,10 @@ void TDataManager::MakeCalGraph(UInt_t DET, UInt_t FS, Option_t *opt){
      g->SetPoint(BS,hchg->GetBinContent(FS,BS),heng->GetBinContent(FS,BS));
      g->SetPointError(BS,hchg->GetBinError(FS,BS),heng->GetBinError(FS,BS));
   }
+  g->Dump();
 
   if(g->GetN()<3)
-     printf("{TDataManager} Warning :  There are %i points in '%s'.\n",g->GetN(),TSharcFormat::Get()->GetCalGraphName(true,DET,FS));
+     printf("{TDataManager} Warning :  There are %i points in '%s'.\n",g->GetN(),sf->GetCalGraphName(true,DET,FS));
 
   // Fit the graph
   std::string fitopt = opt;

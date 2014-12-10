@@ -32,7 +32,7 @@ endif
 LIBS = -lSharcInput
 LIBS += -lSharcFormat
 LIBS += -lDataManager
-LIBS += -lFileWriter
+LIBS += -lFileManager
 LIBS += -lFitInfo
 LIBS += -lFitManager
 LIBS += -lObjectManager

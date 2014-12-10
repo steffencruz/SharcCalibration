@@ -4,6 +4,7 @@
 #include <TH2.h>
 
 #include "TSharcFormat.h"
+#include "TGraphErrors.h"
 
 ClassImp(TSharcFormat)
 
@@ -82,7 +83,7 @@ const char *TSharcFormat::GetListName(Int_t det, Int_t fs, Int_t bs){
   return getlistname.c_str();
 }
 
-TObject *TSharcFormat::CreateObject(const char *objtype, UInt_t DET, UInt_t FS){
+TObject *TSharcFormat::CreateObject(const char *objtype, UInt_t DET, Int_t FS){
 
   std::string name = objtype;
   //name.clear();
@@ -98,20 +99,39 @@ TObject *TSharcFormat::CreateObject(const char *objtype, UInt_t DET, UInt_t FS){
   } else if(name.compare(GetCentMatName(false))==0){
      
     TH2F *h = new TH2F(GetCentMatName(true,DET),GetCentMatName(true,DET),48,0,48,24,0,24);
-    h->GetXaxis()->SetTitle("Back Strip");
-    h->GetYaxis()->SetTitle("Front Strip");
-    h->Print();
+    h->GetYaxis()->SetTitle("Back Strip");
+    h->GetXaxis()->SetTitle("Front Strip");
     return (TObject*) h;
 
   } else if(name.compare(GetCalcMatName(false))==0){
 
     TH2F *h = new TH2F(GetCalcMatName(true,DET),GetCalcMatName(true,DET),48,0,48,24,0,24);
-    h->GetXaxis()->SetTitle("Back Strip");
-    h->GetYaxis()->SetTitle("Front Strip");
+    h->GetYaxis()->SetTitle("Back Strip");
+    h->GetXaxis()->SetTitle("Front Strip");
     return (TObject*) h;
 
+  } else if(name.compare(GetCalGraphName(false))==0){
+
+    TGraphErrors *gerrs = new TGraphErrors();
+    gerrs->SetName(GetCalGraphName(true,DET,FS));
+    gerrs->SetTitle(GetCalGraphName(true,DET,FS));
+    gerrs->GetXaxis()->SetTitle("Charge [/Integration]");
+    gerrs->GetYaxis()->SetTitle("Energy calculated [keV]");
+    gerrs->GetYaxis()->SetTitleOffset(1.4);
+    return (TObject*) gerrs;
+  
+  } else if(name.compare(GetMulGraphName(false))==0){
+
+    TGraphErrors *gerrs = new TGraphErrors();
+    gerrs->SetName(GetMulGraphName(true,DET,FS));
+    gerrs->SetTitle(GetMulGraphName(true,DET,FS));
+    gerrs->GetXaxis()->SetTitle("Charge [/Integration]");
+    gerrs->GetYaxis()->SetTitle("Energy calculated [keV]");
+    gerrs->GetYaxis()->SetTitleOffset(1.4);
+    return (TObject*) gerrs;
+
   } else {
-     printf("{TSharcFormat} Warning :  I can't make '%s' right now..\n",objtype);
+     printf("{TSharcFormat} Warning :  I can't make [DET = %i, FS %i] '%s' right now..\n",DET,FS,objtype);
      return 0;
   }
 
