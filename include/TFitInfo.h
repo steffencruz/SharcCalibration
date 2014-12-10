@@ -11,7 +11,7 @@ class TFitInfo : public TNamed {
 
   public:
     TFitInfo();
-    TFitInfo(TF1 *func, Double_t *xvals, Double_t *yvals, UInt_t npeaks, Bool_t flag=true); 
+    TFitInfo(TF1 *func, Double_t *xvals, Double_t *yvals, UInt_t npeaks, Bool_t flag=true, const char *infoname=""); 
     virtual ~TFitInfo();
 
     void Clear(Option_t *opt = "");

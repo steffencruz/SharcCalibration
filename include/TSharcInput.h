@@ -8,9 +8,11 @@
 #ifndef __CINT__
 #include "TNucleus.h"
 #include "TKinematics.h"
+#include "TSharcAnalysis.h"
 #else 
 class TNucleus;
 class TKinematics;
+class TSharcAnalysis;
 #endif
 
 
@@ -27,8 +29,6 @@ class TSharcInput : public TNamed  {
     virtual void Print(Option_t *opt = "");
     virtual void Clear(Option_t *opt = "");
   
-    TKinematics *GetKinematics(Option_t *opt = "");
-
   private:
     static TSharcInput *fSharcInput;
     TSharcInput(Bool_t);
@@ -39,6 +39,7 @@ class TSharcInput : public TNamed  {
     Bool_t CopyInputFile(const char *);
     Bool_t ParseInputFile(const char *);
 
+  private:
     void SetZ(UInt_t &Z)                                  { fprotons = Z               ; }
     void SetN(UInt_t &N)                                  { fneutrons = N              ; }
     void SetBeamEperU(Double_t &EperU)                    { feperu = EperU             ; }
@@ -58,17 +59,22 @@ class TSharcInput : public TNamed  {
     void SetBackChargeMinMax(Double_t chgmin, Double_t chgmax)  { fBackCharge_min = chgmin  ; fBackCharge_max = chgmax  ; }
     void SetPadChargeMinMax(Double_t chgmin, Double_t chgmax)   { fPadCharge_min = chgmin   ; fPadCharge_max = chgmax   ; }
 
-    const char *GetData() { return fInfileData.c_str(); }
-
   public:
+    const char *GetInfileName() { return fInfileName.c_str(); }
+    const char *GetInfileData() { return fInfileData.c_str(); }
+    
     UInt_t GetZ()                                         { return fprotons            ; }
     UInt_t GetN()                                         { return fneutrons           ; }
     UInt_t GetA()                                         { return fprotons+fneutrons  ; }
     Double_t GetTargetThickness()                         { return ftargthick          ; }
     Double_t GetBeamEperU()                               { return feperu              ; }
+    TNucleus * GetBeamNucleus()                           { return fbeam               ; }
     const char *GetBeamSymbol()                           { return fbeam->GetSymbol()  ; }
     TVector3 GetPosOffs()                                 { return fposoff             ; }
     const char *GetTargetMaterial()                       { return ftargmat.c_str()    ; }
+    Double_t GetBeamEnergyMidTarget();                 
+    TKinematics *GetElasticKinematics(const char *ion, Option_t *opt = "");
+    
     const char *GetRunDataDir()                           { return frundatadir.c_str() ; }
     const char *GetSrcDataDir()                           { return fsrcdatadir.c_str() ; }
     std::vector<std::string> GetRunData()                 { return frundata            ; }
@@ -87,12 +93,12 @@ class TSharcInput : public TNamed  {
     Double_t GetPadChargeMax()                            { return fPadCharge_max      ; }
 
     const char *MakeOutputName();
-
+/*
     void SetRunChgMat(const char *tmp)   { frunchgmat.assign(tmp); }
     void SetSrcChgMat(const char *tmp)   { fsrcchgmat.assign(tmp); }
     const char *GetRunChgMat()     { return frunchgmat.c_str()   ; }
     const char *GetSrcChgMat()     { return fsrcchgmat.c_str()   ; }
-
+*/
   private:
     std::string fInfileName;
     std::string fInfileData;
@@ -101,7 +107,6 @@ class TSharcInput : public TNamed  {
     UInt_t      fneutrons;          // beam neutron number
     Double_t    feperu;             // beam energy per u [MeV]
     TNucleus    *fbeam;
-    TKinematics *freaction[3];       // kinematics of elastic channels
     TVector3    fposoff;            // sharc position offset
     Double_t    ftargthick;         // target thickness
     std::string ftargmat;           // target material

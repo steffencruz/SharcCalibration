@@ -35,7 +35,7 @@ class TSharcFormat : public TObject {
     const char *GetFitInfoName(Bool_t path=false, Int_t det=-1, Int_t fs=-1, Int_t bs=-1)  { return GetObjectName(fFitInfoName.c_str(),path,det,fs,bs);  }
 
     // as ChgSpec and ExcSpec are simply projections, they will already be formatted
-    TObject *CreateObject(const char *objtype, UInt_t DET, UInt_t FS);
+    TObject *CreateObject(const char *objtype, UInt_t DET, Int_t FS=-1);
 
   private:
     TSharcFormat(); 

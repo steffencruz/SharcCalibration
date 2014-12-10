@@ -32,7 +32,9 @@ class TObjectManager : public TObject  {
     TObject *GetObject(const char *oname, const char *listname=0);
     TList *GetMasterList() { return fMasterList; }
 
-  ClassDef(TObjectManager,1)
+    
+
+ ClassDef(TObjectManager,1)
 
 };
 

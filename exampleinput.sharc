@@ -10,6 +10,8 @@ nameless {
   RunChargeSpecFunction: TGRSIFunctions::MultiSkewedGausWithBG2
   RunChargeSpecFitRange: 500 4000
   NumRunPeaks          : 2
+  
+  SrcChargeSpecFunction: TGRSIFunctions::MultiGausWithBG
   SrcEnergy            : 5156.6 5484.6 5804.8 
 
 // BEAM AND TARGET INFO         //////////////////////////////////////////////////////
@@ -28,7 +30,7 @@ nameless {
 //  rundata              : analysis28992*
   
   // src
-  srcdatadir           : /tig/grsmid01_data4/tigress/PeterSteffen/sr95/srcdata/
+  srcdatadir           : /tig/grsmid01_data4/tigress/     //     /tig/grsmid01_data4/tigress/PeterSteffen/sr95/srcdata/
   srcdata              : analysis23456_789.root
   
   // cuts
