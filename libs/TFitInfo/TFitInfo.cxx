@@ -48,25 +48,16 @@ void TFitInfo::SetPeakNames(std::vector<std::string> ions){
   }  
 }
 
-Double_t TFitInfo::GetX(const char *name){
+UInt_t TFitInfo::GetPeakNum(const char *name){
   
-  for(int i=0; i<fpeaknames.size(); i++){
+  for(UInt_t i=0; i<fpeaknames.size(); i++){
     if(fpeaknames.at(i).compare(name)==0)
-       return GetX(i);
+       return i;
   }
-  printf("{TFitInfo} Warning :  Peak name '%s' not recognised. X was not returned. \n",name);
-  return 0.0;
+  printf("{TFitInfo} Warning :  Peak name '%s' not recognised. Peak number was not returned. \n",name);
+  return 0;
 }
 
-Double_t TFitInfo::GetY(const char *name){
-  
-  for(int i=0; i<fpeaknames.size(); i++){
-    if(fpeaknames.at(i).compare(name)==0)
-       return GetY(i);
-  }
-  printf("{TFitInfo} Warning :  Peak name '%s' not recognised. Y was not returned. \n",name);
-  return 0.0;
-}
 
 void TFitInfo::Print(Option_t *opt) {
   

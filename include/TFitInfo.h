@@ -22,11 +22,10 @@ class TFitInfo : public TNamed {
     UInt_t GetNPeaks()                            { return fnpeaks                  ; }
     Double_t GetX(int i)                          { return fxvalues.at(i)           ; }
     Double_t GetY(int i)                          { return fyvalues.at(i)           ; }
-    Double_t GetX(const char *name);
-    Double_t GetY(const char *name);
     TF1 *GetFunction()                            { return &ffunction               ; }
     Bool_t GetStatus()                            { return fgood                    ; }
     const char *GetPeakName(int i)                { return fpeaknames.at(i).c_str() ; }
+    UInt_t GetPeakNum(const char *name);
 
   private:
     void SetNPeaks(UInt_t &n)                     { fnpeaks = n                     ; }

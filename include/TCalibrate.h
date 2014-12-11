@@ -1,6 +1,8 @@
 #ifndef TSHARCCALIBRATE_H
 #define TSHARCCALIBRATE_H
 
+#include <map>
+
 #include <Rtypes.h>
 #include <TNamed.h>
 
@@ -22,17 +24,19 @@ class TCalibrate : public TNamed {
     void LoadCal(const char *ifname);
     void SaveCal();
     
+    Bool_t GetFlag(const char *flagname, Option_t *opt = "");
   private:
     static TCalibrate *fCalibrate;
     TCalibrate(Bool_t);
-    
+
     Bool_t InitDeltaCal(const char *ifname);
-    const char *Calibrate(Option_t *opt);
+    const char *CalibrateSeparate(Option_t *opt);
+    void SetFlag(const char *flagname, Option_t *opt, Bool_t flag);
     
     Bool_t OpenCalibration(const char *cfname);
-    Bool_t CountCalObjects(const char *objname);
+    
+    Bool_t ExistInFile(const char *objname);
     void CreateCalObject(const char *objtype, Option_t *opt, Int_t det=-1, Int_t fs=-1);
-//    void CreateCalObjects(const char *objtype, Int_t det_min, Int_t det_max, Int_t fs_min, Int_t fs_max=-1); // back strips not necessary as they are projections
    
    // option flag allows us to process run/src data in same function
     Bool_t MakeChargeMatrices(Option_t *opt);
@@ -40,7 +44,9 @@ class TCalibrate : public TNamed {
     Bool_t PutCentroidsInMatrix(Option_t *opt);
     Bool_t PutEnergiesInMatrix(Option_t *opt);
     Bool_t ProduceCalGraphs(Option_t *opt);
-    Bool_t ProduceMulGraphs(Option_t *opt);
+    Bool_t ProduceSrcCalGraphs(Option_t *opt="");
+//    Bool_t ProduceMulGraphs(Option_t *opt);
+    Bool_t ProduceCombinedCalGraphs(Option_t *opt);
 
   public:
     // I would love for this to be able to open a GUI that shows sharc statuses
@@ -50,26 +56,7 @@ class TCalibrate : public TNamed {
   private:
     // Do we want ..?
     // Do we also want a list of detectors/frontstrips to specify what to calibrate?
-
-    Bool_t fSharcInputFlag    ;
-    Bool_t fRunCalibrationFlag;
-    Bool_t fSrcCalibrationFlag;
-
-    Bool_t fRunChgMatsFlag    ;
-    Bool_t fRunChgSpecsFlag   ;
-    Bool_t fRunChgFitsFlag    ;
-    Bool_t fRunCentMatsFlag   ;
-    Bool_t fRunCalcMatsFlag   ;
-    Bool_t fRunCalGraphsFlag  ;
-    Bool_t fRunMulGraphsFlag  ;
-    Bool_t fSrcChgMatsFlag    ;
-    Bool_t fSrcChgSpecsFlag   ;
-    Bool_t fSrcChgFitsFlag    ;
-    Bool_t fSrcCentMatsFlag   ;
-    Bool_t fSrcCalcMatsFlag   ;
-    Bool_t fSrcCalGraphsFlag  ;
-    Bool_t fSrcMulGraphsFlag  ;
-
+    std::map<std::string,bool> fCalFlags;
   ClassDef(TCalibrate,0)
 };
 

@@ -8,6 +8,7 @@
 #include "TChannel.h"
 #include "TNucleus.h"
 #include "TKinematics.h"
+#include "TSharc.h"
 #include "TSharcAnalysis.h"
 
 ClassImp(TSharcInput)
@@ -233,6 +234,15 @@ Double_t TSharcInput::GetChgSpecResolution(Option_t *opt){
   }
 }
 
+UInt_t TSharcInput::GetIonNumber(const char *ion, Option_t *opt){
+
+  for(int i=0; i<GetIons(opt).size(); i++)
+     if(GetIons(opt).at(i).compare(ion)==0)
+        return i;
+
+  return 0;// maybe return  null value and not zero (although that woud cause a seg fault..)
+}
+
 Double_t TSharcInput::GetChgSpecThreshold(Option_t *opt){
 
   if(strcmp(opt,"Run")==0)
@@ -249,18 +259,44 @@ Double_t TSharcInput::GetBeamEnergyMidTarget(){
   return TSharcAnalysis::GetBeamEnergyInTarget(GetA(),GetBeamEperU()); 
 }
 
-TKinematics *TSharcInput::GetElasticKinematics(const char *ion, Option_t *opt){
+TKinematics *TSharcInput::GetRunKinematics(const char *ion, Option_t *opt){
   
   TNucleus *n = new TNucleus(ion);
   TKinematics *kin;
   if(!n)
     kin = 0;
   else 
-    kin = new TKinematics(GetBeamEnergyMidTarget(),GetBeamSymbol(),ion,ion,GetBeamSymbol());
+    kin = new TKinematics(GetBeamEnergyMidTarget()*1e-3,GetBeamSymbol(),ion,ion,GetBeamSymbol());
   
   return kin;
 }
 
+std::vector<double> TSharcInput::GetEmeas(UInt_t DET, UInt_t FS, UInt_t BS,const char *ion, Option_t *opt){
+
+  Double_t efull = 0.0;
+  std::vector<double> emeas;
+  TVector3 position;
+  char p = (char)std::tolower(ion[0]); // get lowercase char for ion 'p','d','a'...
+
+  if(strcmp(opt,"Run")==0){
+    position = TSharc::GetPosition(DET,FS,BS,GetPosOffs().X(),GetPosOffs().Y(),GetPosOffs().Z());
+    TKinematics *kin = GetRunKinematics(Form("%c",p));
+    efull = kin->ELab(position.Theta(),2)*1e3;
+    emeas = TSharcAnalysis::GetMeasuredEnergy(position,DET,efull,p);
+  }
+  else if(strcmp(opt,"Src")==0){
+    position = TSharc::GetPosition(DET,FS,BS); // no position offset
+    efull = GetSrcEnergies().at(GetIonNumber(ion,opt));
+    emeas = TSharcAnalysis::GetMeasuredEnergy(position,DET,efull,p,"no_target");// no target energy loss
+  }
+  else{
+    printf("{TSharcInput} Warning : Invalid input '%s'. Generalised getters only work for input of 'Run' or 'Src'.\n",opt);
+    return emeas;
+  }
+  
+ printf("[DET = %i FS = %i BS = %i]\t theta = %.2f [deg]\t efull = %.2f [keV]\t emeas[0] = %.2f [keV]\t emeas[1] = %.2f [keV]\n",DET,FS,BS,position.Theta()*TMath::RadToDeg(),efull,emeas.at(0),emeas.at(1));
+  return emeas;
+}
 
 void TSharcInput::trim(std::string * line, const std::string trimChars) {
   //Removes the the string "trimCars" from  the string 'line'
@@ -376,6 +412,7 @@ Bool_t TSharcInput::ParseInputFile(const char *filedata){
             SetTargetMaterial(line.c_str());
           } else if(type.compare("TARGETTHICKNESS")==0){
             Double_t tempdouble; ss>>tempdouble;
+            TSharcAnalysis::SetTarget(tempdouble); // IT HAPPENS NOW!!
             SetTargetThickness(tempdouble);
           } else if(type.compare("SRCIONTYPE")==0){
             AddSrcIon(line.c_str());
