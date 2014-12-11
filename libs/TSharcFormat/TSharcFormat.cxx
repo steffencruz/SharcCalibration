@@ -58,11 +58,12 @@ void TSharcFormat::Print(Option_t *opt) {}
 
 void TSharcFormat::Clear(Option_t *opt) {}
 
-const char *TSharcFormat::GetObjectName(const char* objname, Bool_t fullname, Int_t det, Int_t fs, Int_t bs){
+const char *TSharcFormat::GetObjectName(const char* objname, const char *ion, Bool_t fullname, Int_t det, Int_t fs, Int_t bs){
   static std::string objectname;
   objectname.clear();
   if(fullname) objectname.append(GetListName(det,fs,bs));
   objectname.append(objname);
+  objectname.append(ion); // by default this is an empty string
   return objectname.c_str();
 }
 
@@ -83,55 +84,55 @@ const char *TSharcFormat::GetListName(Int_t det, Int_t fs, Int_t bs){
   return getlistname.c_str();
 }
 
-TObject *TSharcFormat::CreateObject(const char *objtype, UInt_t DET, Int_t FS){
+TObject *TSharcFormat::CreateObject(const char *objtype, Option_t *opt, UInt_t DET, Int_t FS){
 
   std::string name = objtype;
   //name.clear();
   //name = objtype;
 
-  if(name.compare(GetChgMatName(false))==0){
+  if(name.compare(GetChgMatName())==0){
     // printf("NEW HIST NAME = %s\n",GetChgMatName(true,DET,FS));
-    TH2F *h = new TH2F(GetChgMatName(true,DET,FS),GetChgMatName(true,DET,FS),48,0,48,16000,0,16000);
+    TH2F *h = new TH2F(GetChgMatName(opt,true,DET,FS),GetChgMatName(opt,true,DET,FS),48,0,48,16000,0,16000);
     h->GetXaxis()->SetTitle("Back Strip");
     h->GetYaxis()->SetTitle("Charge [/Integration]"); // could get the integration and actually put it here quite easily
     h->GetYaxis()->SetTitleOffset(1.4);
     return (TObject*) h;
-  } else if(name.compare(GetCentMatName(false))==0){
+  } else if(name.compare(GetCentMatName())==0){
      
-    TH2F *h = new TH2F(GetCentMatName(true,DET),GetCentMatName(true,DET),48,0,48,24,0,24);
+    TH2F *h = new TH2F(GetCentMatName(opt,true,DET),GetCentMatName(opt,true,DET),48,0,48,24,0,24);
     h->GetYaxis()->SetTitle("Back Strip");
     h->GetXaxis()->SetTitle("Front Strip");
     return (TObject*) h;
 
-  } else if(name.compare(GetCalcMatName(false))==0){
+  } else if(name.compare(GetCalcMatName())==0){
 
-    TH2F *h = new TH2F(GetCalcMatName(true,DET),GetCalcMatName(true,DET),48,0,48,24,0,24);
+    TH2F *h = new TH2F(GetCalcMatName(opt,true,DET),GetCalcMatName(opt,true,DET),48,0,48,24,0,24);
     h->GetYaxis()->SetTitle("Back Strip");
     h->GetXaxis()->SetTitle("Front Strip");
     return (TObject*) h;
 
-  } else if(name.compare(GetCalGraphName(false))==0){
+  } else if(name.compare(GetCalGraphName())==0){
 
     TGraphErrors *gerrs = new TGraphErrors();
-    gerrs->SetName(GetCalGraphName(true,DET,FS));
-    gerrs->SetTitle(GetCalGraphName(true,DET,FS));
+    gerrs->SetName(GetCalGraphName(opt,true,DET,FS));
+    gerrs->SetTitle(GetCalGraphName(opt,true,DET,FS));
     gerrs->GetXaxis()->SetTitle("Charge [/Integration]");
     gerrs->GetYaxis()->SetTitle("Energy calculated [keV]");
     gerrs->GetYaxis()->SetTitleOffset(1.4);
     return (TObject*) gerrs;
   
-  } else if(name.compare(GetMulGraphName(false))==0){
+  } else if(name.compare(GetMulGraphName())==0){
 
     TGraphErrors *gerrs = new TGraphErrors();
-    gerrs->SetName(GetMulGraphName(true,DET,FS));
-    gerrs->SetTitle(GetMulGraphName(true,DET,FS));
+    gerrs->SetName(GetMulGraphName(opt,true,DET,FS));
+    gerrs->SetTitle(GetMulGraphName(opt,true,DET,FS));
     gerrs->GetXaxis()->SetTitle("Charge [/Integration]");
     gerrs->GetYaxis()->SetTitle("Energy calculated [keV]");
     gerrs->GetYaxis()->SetTitleOffset(1.4);
     return (TObject*) gerrs;
 
   } else {
-     printf("{TSharcFormat} Warning :  I can't make [DET = %i, FS %i] '%s' right now..\n",DET,FS,objtype);
+     printf("{TSharcFormat} Warning :  I can't make [DET = %i, FS = %i] '%s' right now..\n",DET,FS,objtype);
      return 0;
   }
 

@@ -5,6 +5,7 @@
 #include <TROOT.h>
 #include <TMath.h>
 
+#include "Globals.h"
 #include "TGRSIFunctions.h"
 
 #ifndef PI
@@ -86,29 +87,16 @@ TSpectrum *TFitManager::PeakSearch(TH1D *h, UInt_t npeaks, Double_t resolution, 
   s->Search(h,resolution,"",threshold); //resolution is peak width in bins
   
   UInt_t npf = s->GetNPeaks();
-  if(npf==0){//!=npeaks){
-    printf("\n{TFitManager} ERROR :  Peak search for '%s' found %i peaks.. change axis range or something\n",h->GetName(),npf);
-//    s->Clear(); // return enmpty spectrum
+  if(npf==0 || npf>npeaks){//!=npeaks){
+    printf("\n{TFitManager} ERROR :  Peak search for '%s' found %i/%i peaks!! Don't just stand there, "DRED" Do something"RESET_COLOR" !! \n",h->GetName(),npf,npeaks);
+//    s->Clear(); // return empty spectrum
     return 0;
-//    h->GetListOfFunctions()->FindObject("TSpec")->Clear();// don't leave markers on plot
   }
 
   Float_t *xpos, *ypos;
   xpos = s->GetPositionX();
   ypos = s->GetPositionY();
-/*
-  // only works for 2 peaks
-  double xtemp,ytemp;
-  if(xpos[0]>xpos[1]){
-    xtemp = xpos[0];
-    ytemp = ypos[0];
-    xpos[0] = xpos[1];
-    ypos[0] = ypos[1];
-    xpos[1] = xtemp;
-    ypos[1] = ytemp;
-  }
-*/
-
+  
   UInt_t indx[npf];
   Float_t xx[npf], yy[npf];
   TMath::Sort(npf,xpos,indx,true);
@@ -125,7 +113,8 @@ TSpectrum *TFitManager::PeakSearch(TH1D *h, UInt_t npeaks, Double_t resolution, 
   return s;
 }
 
-std::vector<double> TFitManager::GetParameters(const char *fname, TSpectrum *s){
+std::vector<double> TFitManager::GetParameters(const char *fname, TSpectrum *s, Double_t res){
+// builds some preset function parametter sets using the TSpectrum result
 
   std::string name = fname;
   std::vector<double> pars;
@@ -153,11 +142,11 @@ std::vector<double> TFitManager::GetParameters(const char *fname, TSpectrum *s){
   if(name.compare("TGRSIFunctions::LanGaus")==0){
     pars.push_back(0.0); // constant background
     pars.push_back(0.0); // linear background
-    pars.push_back(0.0); // convolution resolution (don't set it here)
+    pars.push_back(res); // convolution resolution (don't set it here)
     for(int i=0; i<npeaks; i++){
        pars.push_back(ypos[i]); // peak height
        pars.push_back(xpos[i]); // peak centroid
-       pars.push_back(0.0);     // peak width (don't set here)
+       pars.push_back(res);     // peak width (don't set here)
     }
   }
   else if(name.compare("TGRSIFunctions::MultiSkewedGausWithBG2")==0){
@@ -166,17 +155,22 @@ std::vector<double> TFitManager::GetParameters(const char *fname, TSpectrum *s){
     for(int i=0; i<npeaks; i++){
        pars.push_back(ypos[i]); // peak height
        pars.push_back(xpos[i]); // peak centroid
-       pars.push_back(100.0);     // gaus peak width (don't set here)
-       pars.push_back(100.0);     // skew peak width (don't set here)
+       pars.push_back(res);     // gaus peak width (don't set here)
+       pars.push_back(res);     // skew peak width (don't set here)
     }
   }
   else if(name.compare("TGRSIFunctions::MultiGausWithBG")==0){
     pars.push_back(0.0); // constant background
     pars.push_back(0.0); // linear background
     for(int i=0; i<npeaks; i++){
-       pars.push_back(ypos[i]); // peak height
-       pars.push_back(xpos[i]); // peak centroid
-       pars.push_back(0.0);     // peak width (don't set here)
+       pars.push_back(ypos[i]);     // main peak height
+       pars.push_back(xpos[i]);     // main peak centroid
+       pars.push_back(res);        // main peak width (don't set here)
+    }
+    for(int i=0; i<npeaks; i++){
+       pars.push_back(ypos[i]*0.1); // sub peak height
+       pars.push_back(xpos[i]-50);  // sub peak centroid
+       pars.push_back(res);        // sub peak width (don't set here)
     }
   } else {
     printf("{TFitManager} Warning :  Function '%s' not recognised.\n");
@@ -223,7 +217,7 @@ std::vector<std::string> TFitManager::GetParNames(const char *fname, UInt_t npea
   else if(name.compare("TGRSIFunctions::MultiGausWithBG")==0){
     parnames.push_back("BG_CONSTANT");
     parnames.push_back("BG_LINEAR");
-    for(int i=0; i<npeaks; i++){
+    for(int i=0; i<2*npeaks; i++){
        sprintf(buffer,"PEAK%i_HEIGHT",i);
        parnames.push_back(buffer); 
        sprintf(buffer,"PEAK%i_MEAN",i);
