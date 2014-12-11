@@ -88,7 +88,7 @@ class TSharcInput : public TNamed  {
     TVector3 GetPosOffs()                                 { return fposoff             ; }
     const char *GetTargetMaterial()                       { return ftargmat.c_str()    ; }
     Double_t GetBeamEnergyMidTarget();                 
-    TKinematics *GetElasticKinematics(const char *ion, Option_t *opt = "");
+    TKinematics *GetRunKinematics(const char *ion, Option_t *opt = "");
    
     ///////////////////////////////////////////////////////////////////////////////////////////
     // these getters are much easier to use in a generalised code that uses the same functions
@@ -100,6 +100,8 @@ class TSharcInput : public TNamed  {
     Double_t GetChgSpecResolution(Option_t *opt);   
     Double_t GetChgSpecThreshold(Option_t *opt);   
     const char *GetChgSpecFitFunction(Option_t *opt);
+    UInt_t GetIonNumber(const char *ion, Option_t *opt);
+    std::vector<double> GetEmeas(UInt_t DET, UInt_t FS, UInt_t BS, const char *ion, Option_t *opt);
     ///////////////////////////////////////////////////////////////////////////////////////////
     
     const char *GetRunDataDir()                           { return frundatadir.c_str() ; }

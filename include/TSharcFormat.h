@@ -23,8 +23,8 @@ class TSharcFormat : public TObject {
     const char *GetCentMatName (const char *ion="",Bool_t path=false,Int_t det=-1)                        {return GetObjectName(fCentMatName.c_str(),ion,path,det)      ;}
     const char *GetCalcMatName (const char *ion="",Bool_t path=false,Int_t det=-1)                        {return GetObjectName(fCalcMatName.c_str(),ion,path,det)      ;}
     const char *GetChgSpecName (const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1){return GetObjectName(fChgSpecName.c_str(),ion,path,det,fs,bs);}
-    const char *GetCalGraphName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fCalGraphName.c_str(),ion,path,det)     ;}
-    const char *GetMulGraphName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fMulGraphName.c_str(),ion,path,det)     ;}
+    const char *GetCalGraphName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fCalGraphName.c_str(),ion,path,det,fs)  ;}
+    const char *GetMulGraphName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fMulGraphName.c_str(),ion,path,det,fs)  ;}
     //Calibrated spectra can be grouped (ie. plot different detectors together)  
     const char *GetKinMatName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1)  {return GetObjectName(fKinMatName.c_str(),ion,path,det,fs)    ;}
     const char *GetResMatName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1)  {return GetObjectName(fResMatName.c_str(),ion,path,det,fs)    ;}

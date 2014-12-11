@@ -63,9 +63,6 @@ TFitInfo *TFitManager::FitHist(const char *fcn, TH1D *h, Double_t *parms, UInt_t
   }
 
   TFitInfo *tfi = new TFitInfo(func,xpos,ypos,npeaks,status);
-  
-  if(true)
-    tfi->Print();
 
   return tfi;
 }
@@ -88,7 +85,7 @@ TSpectrum *TFitManager::PeakSearch(TH1D *h, UInt_t npeaks, Double_t resolution, 
   
   UInt_t npf = s->GetNPeaks();
   if(npf==0 || npf>npeaks){//!=npeaks){
-    printf("\n{TFitManager} ERROR :  Peak search for '%s' found %i/%i peaks!! Don't just stand there, "DRED" Do something"RESET_COLOR" !! \n",h->GetName(),npf,npeaks);
+    printf("\n{TFitManager} Warning :  Peak search for '%s' found %i/%i peaks!! Don't just stand there, "DRED" Do something"RESET_COLOR" !! \n",h->GetName(),npf,npeaks);
 //    s->Clear(); // return empty spectrum
     return 0;
   }

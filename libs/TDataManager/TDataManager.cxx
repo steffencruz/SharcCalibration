@@ -227,6 +227,7 @@ void TDataManager::MakeChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t
     return;
   
   TH1D *h1 = h->ProjectionY(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS,BS),BS,BS); // project out charge matrix
+  h1->SetTitle(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS,BS));
 
   om->GetList(TSharcFormat::Get()->GetListName(DET,FS,BS));
   om->AddObjectToList(h1,TSharcFormat::Get()->GetListName(DET,FS,BS));
@@ -243,17 +244,20 @@ void TDataManager::FitChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t 
   if(!h)
     return;
 
-  TSpectrum *s = TFitManager::PeakSearch(h,si->GetIons(opt).size(),si->GetChgSpecResolution(opt),si->GetChgSpecThreshold(opt));
+  UInt_t ngroup = 1;
+  h->Rebin(ngroup);//si->GetRebinGroup(opt));
+
+  TSpectrum *s = TFitManager::PeakSearch(h,si->GetIons(opt).size(),si->GetChgSpecResolution(opt)/(double)ngroup,si->GetChgSpecThreshold(opt));
   if(!s)
      return;
 
   Double_t xmin = si->GetChgSpecFitRangeMin(opt);
   Double_t xmax = si->GetChgSpecFitRangeMax(opt);
   const char *fname = si->GetChgSpecFitFunction(opt);
-  std::vector<double> pars = TFitManager::GetParameters(fname,s,si->GetChgSpecResolution(opt));
+  std::vector<double> pars = TFitManager::GetParameters(fname,s,si->GetChgSpecResolution(opt)/(double)ngroup);
 //  std::vector<std:string> parnames = TFitManager::GetParNames(fname,si->GetNRunPeaks());
   
-  printf("* * * * %s will be fit using %s * * * * * * * *\n",h->GetName(),fname);
+ // printf("* * * * %s will be fit using %s * * * * * * * *\n",h->GetName(),fname);
   TFitInfo *finfo = TFitManager::FitHist(fname,h,&pars[0],pars.size(),xmin,xmax);
 
   finfo->SetInfoName(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS));
@@ -273,10 +277,23 @@ void TDataManager::MakeCentroidMat(const char *ion, UInt_t DET, Option_t *opt){
   
   for(int FS=0; FS<24; FS++){
     for(int BS=0; BS<8; BS++){
-     
+//      printf("Looking for Fitinfo %s...\n",TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS));
       tfi = (TFitInfo*) om->GetObject(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS),TSharcFormat::Get()->GetListName(DET,FS,BS));  // haha TRUE DET FSBS
-      if(tfi && tfi->GetStatus()) // check that the spectrum was fit
-        h->Fill(BS,FS,tfi->GetX(ion)); // ion should be able to be used to get specific peaks from the fit (as long as they are stored sensibly)
+      if(!tfi)
+         continue;
+/*      else if(!tfi->GetStatus()){ // check that the spectrum was fit
+        printf("This one looks bad!!\n");
+        tfi->Print();
+        continue;
+      }
+*/      //printf("FitInfo '%s' ->peak '%s' centroid = %.2f\n",tfi->GetName(),ion,tfi->GetX(tfi->GetPeakNum(ion)));
+      h->SetBinContent(FS,BS,tfi->GetX(tfi->GetPeakNum(ion))); // ion should be able to be used to get specific peaks from the fit (as long as they are stored sensibly)
+      TF1 *func = tfi->GetFunction();
+//      func->Print();
+      UInt_t parnum = func->GetParNumber(Form("PEAK%i_MEAN",tfi->GetPeakNum(ion)));
+ //     printf("I Got this parameter ->\t %i, %s, %f +-%f\n",parnum,func->GetParName(parnum),func->GetParameter(parnum),func->GetParError(parnum));
+      h->SetBinError(FS,BS,func->GetParError(parnum));
+//      printf("FILLED DET %i FS %i BS %i\n",DET,FS,BS);
     }
   }
   return; 
@@ -289,20 +306,18 @@ void TDataManager::MakeCalcEnergyMat(const char *ion, UInt_t DET, Option_t *opt)
   TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetCalcMatName(ion,true,DET),TSharcFormat::Get()->GetListName(DET));  // haha TRUE DET
   if(!h)
      return;
-  char p = (char)std::tolower(ion[0]); // get lowercase char for ion 'p','d','a'...
-  TVector3 position;
-  Double_t ekin;
+  
   std::vector<double> emeas;
-
   for(int FS=0; FS<24; FS++){
     for(int BS=0; BS<8; BS++){
-      
-      position = TSharc::GetPosition(DET,FS,BS,si->GetPosOffs().X(),si->GetPosOffs().Y(),si->GetPosOffs().Z());
-      TKinematics *kin =  si->GetElasticKinematics(Form("%c",p));
-      ekin = kin->ELab(position.Theta(),2);
-      emeas = TSharcAnalysis::GetMeasuredEnergy(position,DET,ekin,p);
-      printf("[DET = %i\t FS = %i]\t theta = %.2f [deg]\t ekin = %.2f [keV]\t emeas = %.2f [keV]\n",DET,FS,position.Theta()*TMath::RadToDeg(),ekin,emeas.at(0));    
-      h->Fill(FS,BS,emeas.at(0));
+     
+      emeas = si->GetEmeas(DET,FS,BS,ion,opt);
+      if(emeas.at(1)>0.0)
+         continue;
+
+      h->SetBinContent(FS,BS,emeas.at(0)); 
+      h->SetBinError(FS,BS,100.0); // currently hard coded
+      printf("h->GetBinContent(%02i,%02i) = %.2f\n",FS,BS,h->GetBinContent(FS,BS));
       emeas.clear();
     }
   }
@@ -314,9 +329,8 @@ void TDataManager::MakeCalGraph(const char *ion, UInt_t DET, UInt_t FS, Option_t
   
   TObjectManager *om = TObjectManager::Get();
   TSharcFormat *sf = TSharcFormat::Get(); 
-  ((TList*)om->GetObject(sf->GetListName(DET,FS)))->ls();
   TGraphErrors *g = (TGraphErrors*) om->GetObject(sf->GetCalGraphName(ion,true,DET,FS),sf->GetListName(DET,FS));
-  if(!g || g->GetN()==0){
+  if(!g){
      printf("{TDataManager} Warning :  Graph '%s' not found.\n",sf->GetCalGraphName(ion,true,DET,FS));
      return;
   }
@@ -334,21 +348,23 @@ void TDataManager::MakeCalGraph(const char *ion, UInt_t DET, UInt_t FS, Option_t
   }
 
   for(int BS=0;BS<48;BS++){
+     printf("hchg->GetBinContent(FS,BS) = %.2f\t heng->GetBinContent(FS,BS) = %.2f\n",hchg->GetBinContent(FS,BS),heng->GetBinContent(FS,BS));
      if(hchg->GetBinContent(FS,BS)==0 || heng->GetBinContent(FS,BS)==0)
         continue;
      g->SetPoint(BS,hchg->GetBinContent(FS,BS),heng->GetBinContent(FS,BS));
      g->SetPointError(BS,hchg->GetBinError(FS,BS),heng->GetBinError(FS,BS));
   }
-  g->Dump();
+  g->SetLineColor(TSharcInput::Get()->GetIonNumber(ion,opt)+3); // will be identical between run and source data
+//  g->Dump();
 
   if(g->GetN()<3)
      printf("{TDataManager} Warning :  There are %i points in '%s'.\n",g->GetN(),sf->GetCalGraphName(ion,true,DET,FS));
 
-/*  // Fit the graph
-  std::string fitopt = opt;
-  if(fitopt.compare("pol1")==0)
+  // Fit the graph
+//  std::string fitopt = opt;
+//  if(fitopt.compare("pol1")==0)
      TFitManager::FitGraph("pol1",g);
-*/
+
   return;
 }
 
