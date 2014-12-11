@@ -46,9 +46,10 @@ TDataManager::TDataManager(Bool_t flag){
   ApplySharcInput();
 }
 
-void TDataManager::NewChain(){
+void TDataManager::NewChain(Option_t *opt){
 
   fChain = new TChain("AnalysisTree");
+  fChain->SetTitle(opt);
 
   fChain->SetBranchAddress("TSharc",&fSharc);
   fChain->SetBranchAddress("TTigress",&fTigress);
@@ -57,6 +58,35 @@ void TDataManager::NewChain(){
   return;
 }
   
+Bool_t TDataManager::SetChain(Option_t *opt){
+
+  NewChain(opt);
+  TSharcInput *si = TSharcInput::Get();
+  std::string dir = si->GetDataDir(opt);
+  std::vector<std::string> files = si->GetData(opt);
+  if(files.size()==0 || dir.length()==0){
+    printf("{TDataManager} Warning :  Chain data not found. Found %i files in directory '%s'.\n",files.size(),dir.c_str());
+    return false;
+  }
+  for(int i=0; i<files.size(); i++)
+    AddToChain(files.at(i).c_str(),dir.c_str());
+
+  printf(DCYAN"{TDataManager} Message :  Chain has been set (%i trees,%i entries)."RESET_COLOR"\n",fChain->GetNtrees(),fChain->GetEntries());
+  return true;
+}
+
+  
+void TDataManager::AddToChain(const char *tree, const char *dir){
+  if(!fChain){
+    printf("{TDataManager} Warning : Chain does not exist.\n");
+    return;
+  }
+
+  char buffer[256];
+  sprintf(buffer,"%s%s",dir,tree);
+  fChain->Add(buffer);
+  return;
+}
 
 void TDataManager::Print(Option_t *opt){
    
@@ -79,14 +109,7 @@ void TDataManager::ApplySharcInput(Option_t *opt){
    // Get sharc input [only loop over run data for now]
    TSharcInput *shinput = TSharcInput::Get();
 
-   // make chain
-   std::vector<std::string> datafiles = shinput->GetRunData();
-   for(int i=0; i<datafiles.size(); i++)
-      AddToChain(datafiles.at(i).c_str(),shinput->GetRunDataDir());
-
-   fChgMat = true; // fill charge matrices flag
-
-    // take care of user settings for charge cuts
+   // take care of user settings for charge cuts
    if(shinput->GetFrontChargeMin()>=0 && shinput->GetFrontChargeMax()>=0){
       fFCsel = true;
       fFrontCharge_min = shinput->GetFrontChargeMin();
@@ -106,17 +129,7 @@ void TDataManager::ApplySharcInput(Option_t *opt){
     }
 
 }
-  
-void TDataManager::AddToChain(const char *tree, const char *dir){
-  if(!fChain)
-     fChain = new TChain("AnalysisTree");
-  
-  char buffer[256];
-  sprintf(buffer,"%s%s",dir,tree);
-  
-  fChain->Add(buffer);
-  return;
-}
+
 
 void TDataManager::ProcessData(Option_t *opt){
 
@@ -134,7 +147,7 @@ void TDataManager::ProcessData(Option_t *opt){
        continue;
 
     if(i%50000==0){
-      printf(DYELLOW"\tProcessing event %i/%i [%.2f %%] in time %i minutes and %.1f seconds"RESET_COLOR"\r",i,nentries,(double)100*i/nentries,floor(w.RealTime()/60),fmod(w.RealTime(),60));
+      printf(DYELLOW"\tProcessing event %i/%i [%.2f %%] in time %i minutes and %.1f seconds"RESET_COLOR"\r",i,nentries,(double)100*i/nentries,(int)floor(w.RealTime()/60.0),fmod(w.RealTime(),60.0));
       fflush(stdout);
       w.Continue();
     }
@@ -152,38 +165,36 @@ void TDataManager::ProcessData(Option_t *opt){
 
 Bool_t TDataManager::ThrowEvent(Option_t *opt){
 
-//  printf("fSharc->GetMultiplicity() = %i",fSharc->GetMultiplicity());
    if(fSharc->GetMultiplicity()!=1)
       return true;
 
   fSharcHit = fSharc->GetHit(0);
 //  printf("\nsharc hit -> f_charge = %.2f\tback_charge = %.2f\tpad_charge = %.2f\n",fSharc->GetMultiplicity(),fSharcHit->GetFrontCharge()/25.0,fSharcHit->GetBackCharge()/25.0,fSharcHit->GetPadCharge()/125.0);
+  if(fSharcHit->GetDetectorNumber()<5 || fSharcHit->GetDetectorNumber()>8)
+    return true;
 
   if(fFCsel)
-      if(fSharcHit->GetFrontCharge()/25.0<fFrontCharge_min || fSharcHit->GetFrontCharge()/25.0>fFrontCharge_max)
+     if(fSharcHit->GetFrontCharge()/25.0<fFrontCharge_min || fSharcHit->GetFrontCharge()/25.0>fFrontCharge_max)
          return true;
 
-   if(fBCsel)
-      if (fSharcHit->GetBackCharge()/25.0<fBackCharge_min || fSharcHit->GetBackCharge()/25.0>fBackCharge_max)
+  if(fBCsel)
+     if (fSharcHit->GetBackCharge()/25.0<fBackCharge_min || fSharcHit->GetBackCharge()/25.0>fBackCharge_max)
          return true;
   
-   if(fPCsel)
-      if (fSharcHit->GetPadCharge()/125.0<fPadCharge_min || fSharcHit->GetPadCharge()/125.0>fPadCharge_max)
+  if(fPCsel)
+     if (fSharcHit->GetPadCharge()/125.0<fPadCharge_min || fSharcHit->GetPadCharge()/125.0>fPadCharge_max)
          return true;
    
 // can also add tigress and trifoil cuts etc in this standardised way
 
    //apply other options
 
+
    return false;
 }
 
 
 void TDataManager::FillHists(Option_t *opt){
-
-//	TList *fList = mList->FindObject(TSharcName::GetListName(DET,FS));
-//    if(fSharcHit->GetDetectorNumber()!=5 || fSharcHit->GetFrontStrip()!=12)
-//       return;
 
 //	 How efficient is this? Will it be optimised by the compiler or should TDataManager just have a pointer to the master list? the time wasted making the DET_FS list will ikely be saved by the fact that object can be found way quicker within the smaller list
   TList *fList = (TList*) TObjectManager::Get()->GetObject(TSharcFormat::Get()->GetListName(fSharcHit->GetDetectorNumber(),fSharcHit->GetFrontStrip()));
@@ -193,16 +204,14 @@ void TDataManager::FillHists(Option_t *opt){
 	}
   TH2F *h;
 	if(fChgMat){ // go look for the appropiate charge matrix
-    h = (TH2F*) fList->FindObject(TSharcFormat::Get()->GetChgMatName(true,fSharcHit->GetDetectorNumber(),fSharcHit->GetFrontStrip()));
+    h = (TH2F*) fList->FindObject(TSharcFormat::Get()->GetChgMatName(fChain->GetTitle(),true,fSharcHit->GetDetectorNumber(),fSharcHit->GetFrontStrip()));
     if(h){
-      h->Fill(fSharcHit->GetBackStrip(),fSharcHit->GetFrontCharge()/25.0);
+      h->Fill(fSharcHit->GetBackStrip(),fSharcHit->GetFrontCharge()/25.0); // *%*%*$#*@#%($@#%(@*#(%*$@#)%(*@$#%()*(@)*%()*#()*@%$^*#()%*$t()@*$#tr*(
     }
   }
 	
   return;
 }
-
-
 
 void TDataManager::FillChargeMats(Option_t *opt){
   fChgMat = true;
@@ -213,30 +222,13 @@ void TDataManager::FillChargeMats(Option_t *opt){
 void TDataManager::MakeChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt){
   
   TObjectManager *om = TObjectManager::Get();
-  TH2F *h2 = (TH2F*)om->GetObject(TSharcFormat::Get()->GetChgMatName(true,DET,FS),TSharcFormat::Get()->GetListName(DET,FS));
-  if(!h2){
-    printf("{TDataManager} Warning :  Could not find charge matrix '%s'.\n",TSharcFormat::Get()->GetChgMatName(true,DET,FS));
+  TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetChgMatName(opt,true,DET,FS),TSharcFormat::Get()->GetListName(DET,FS));
+  if(!h)
     return;
-  }
-  if(h2->Integral()==0)
-     h2->Print();
   
-  TH1D *h1 = h2->ProjectionY(TSharcFormat::Get()->GetChgSpecName(true,DET,FS,BS),BS,BS); // project out charge matrix
-  
-//  if(h1->Integral()==0)
-//    return;
-/*
-  TCanvas *c = new TCanvas;
-  h1->Draw();
-  TApplication *app = new TApplication("app",0,0);
-  printf("I am here   0x%08x\n",h1);
-  app->Run(true);
-*/
+  TH1D *h1 = h->ProjectionY(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS,BS),BS,BS); // project out charge matrix
 
-//  h1->Print();
-  //if(!om->GetObject(TSharcFormat::Get()->GetListName(DET,FS,BS)))
-  om->CreateList(TSharcFormat::Get()->GetListName(DET,FS,BS));
-
+  om->GetList(TSharcFormat::Get()->GetListName(DET,FS,BS));
   om->AddObjectToList(h1,TSharcFormat::Get()->GetListName(DET,FS,BS));
 
   return;
@@ -247,46 +239,57 @@ void TDataManager::FitChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t 
   TObjectManager *om = TObjectManager::Get();
   TSharcInput *si = TSharcInput::Get();
 
-  TH1D *h = (TH1D*)om->GetObject(TSharcFormat::Get()->GetChgSpecName(true,DET,FS,BS),TSharcFormat::Get()->GetListName(DET,FS,BS));
-  
-  TSpectrum *s = TFitManager::PeakSearch(h);//si->GetNRunPeaks(),si->GetRunRes(),si->GetRunThreshold());
+  TH1D *h = (TH1D*)om->GetObject(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS,BS),TSharcFormat::Get()->GetListName(DET,FS,BS));
+  if(!h)
+    return;
+
+  TSpectrum *s = TFitManager::PeakSearch(h,si->GetIons(opt).size(),si->GetChgSpecResolution(opt),si->GetChgSpecThreshold(opt));
   if(!s)
      return;
 
-  Double_t xmin = si->GetRunChgSpecFitRangeMin();
-  Double_t xmax = si->GetRunChgSpecFitRangeMax();
-  const char *fname = si->GetRunChgSpecFitFunction();
-  std::vector<double> pars = TFitManager::GetParameters(fname,s);
+  Double_t xmin = si->GetChgSpecFitRangeMin(opt);
+  Double_t xmax = si->GetChgSpecFitRangeMax(opt);
+  const char *fname = si->GetChgSpecFitFunction(opt);
+  std::vector<double> pars = TFitManager::GetParameters(fname,s,si->GetChgSpecResolution(opt));
 //  std::vector<std:string> parnames = TFitManager::GetParNames(fname,si->GetNRunPeaks());
   
+  printf("* * * * %s will be fit using %s * * * * * * * *\n",h->GetName(),fname);
   TFitInfo *finfo = TFitManager::FitHist(fname,h,&pars[0],pars.size(),xmin,xmax);
-  
+
+  finfo->SetInfoName(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS));
+  finfo->SetPeakNames(si->GetIons(opt));
   om->AddObjectToList(finfo,TSharcFormat::Get()->GetListName(DET,FS,BS));
+  
   return;
 }
 
-void TDataManager::MakeCentroidMat(UInt_t DET, Option_t *opt){
+void TDataManager::MakeCentroidMat(const char *ion, UInt_t DET, Option_t *opt){
   
   TObjectManager *om = TObjectManager::Get();
   TFitInfo *tfi;
-  TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetCentMatName(true,DET),TSharcFormat::Get()->GetListName(DET));  // haha TRUE DET
-
+  TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetCentMatName(ion,true,DET),TSharcFormat::Get()->GetListName(DET));  // haha TRUE DET
+  if(!h)
+    return;
+  
   for(int FS=0; FS<24; FS++){
     for(int BS=0; BS<8; BS++){
      
-      tfi = (TFitInfo*) om->GetObject(TSharcFormat::Get()->GetFitInfoName(true,DET,FS,BS),TSharcFormat::Get()->GetListName(DET,FS,BS));  // haha TRUE DET FSBS
-      if(tfi && tfi->Status()) // check that the spectrum was fit
-        h->Fill(BS,FS,tfi->GetX(0));
+      tfi = (TFitInfo*) om->GetObject(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS),TSharcFormat::Get()->GetListName(DET,FS,BS));  // haha TRUE DET FSBS
+      if(tfi && tfi->GetStatus()) // check that the spectrum was fit
+        h->Fill(BS,FS,tfi->GetX(ion)); // ion should be able to be used to get specific peaks from the fit (as long as they are stored sensibly)
     }
   }
   return; 
 }
  
-void TDataManager::MakeCalcEnergyMat(UInt_t DET, Option_t *opt){
+void TDataManager::MakeCalcEnergyMat(const char *ion, UInt_t DET, Option_t *opt){
   
   TObjectManager *om = TObjectManager::Get();
   TSharcInput *si = TSharcInput::Get();
-  TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetCalcMatName(true,DET),TSharcFormat::Get()->GetListName(DET));  // haha TRUE DET
+  TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetCalcMatName(ion,true,DET),TSharcFormat::Get()->GetListName(DET));  // haha TRUE DET
+  if(!h)
+     return;
+  char p = (char)std::tolower(ion[0]); // get lowercase char for ion 'p','d','a'...
   TVector3 position;
   Double_t ekin;
   std::vector<double> emeas;
@@ -295,39 +298,38 @@ void TDataManager::MakeCalcEnergyMat(UInt_t DET, Option_t *opt){
     for(int BS=0; BS<8; BS++){
       
       position = TSharc::GetPosition(DET,FS,BS,si->GetPosOffs().X(),si->GetPosOffs().Y(),si->GetPosOffs().Z());
-      TKinematics *kin =  si->GetElasticKinematics("p");
+      TKinematics *kin =  si->GetElasticKinematics(Form("%c",p));
       ekin = kin->ELab(position.Theta(),2);
-      emeas = TSharcAnalysis::GetMeasuredEnergy(position,DET,ekin,'p');
-      
+      emeas = TSharcAnalysis::GetMeasuredEnergy(position,DET,ekin,p);
+      printf("[DET = %i\t FS = %i]\t theta = %.2f [deg]\t ekin = %.2f [keV]\t emeas = %.2f [keV]\n",DET,FS,position.Theta()*TMath::RadToDeg(),ekin,emeas.at(0));    
       h->Fill(FS,BS,emeas.at(0));
       emeas.clear();
     }
   }
-  h->Print();
   return; 
 
 }
   
-void TDataManager::MakeCalGraph(UInt_t DET, UInt_t FS, Option_t *opt){
+void TDataManager::MakeCalGraph(const char *ion, UInt_t DET, UInt_t FS, Option_t *opt){
   
   TObjectManager *om = TObjectManager::Get();
   TSharcFormat *sf = TSharcFormat::Get(); 
   ((TList*)om->GetObject(sf->GetListName(DET,FS)))->ls();
-  TGraphErrors *g = (TGraphErrors*) om->GetObject(sf->GetCalGraphName(true,DET,FS),sf->GetListName(DET,FS));
+  TGraphErrors *g = (TGraphErrors*) om->GetObject(sf->GetCalGraphName(ion,true,DET,FS),sf->GetListName(DET,FS));
   if(!g || g->GetN()==0){
-     printf("{TDataManager} Warning :  Graph '%s' not found.\n",sf->GetCalGraphName(true,DET,FS));
+     printf("{TDataManager} Warning :  Graph '%s' not found.\n",sf->GetCalGraphName(ion,true,DET,FS));
      return;
   }
 
-  TH2F *hchg = (TH2F*) om->GetObject(sf->GetCentMatName(true,DET),sf->GetListName(DET)); 
+  TH2F *hchg = (TH2F*) om->GetObject(sf->GetCentMatName(ion,true,DET),sf->GetListName(DET)); 
   if(!hchg || hchg->Integral()==0){
-     printf("{TDataManager} Warning :  Centroid matrix '%s' not found.\n",sf->GetCentMatName(true,DET));
+     printf("{TDataManager} Warning :  Centroid matrix '%s' not found.\n",sf->GetCentMatName(ion,true,DET));
      return;
   }
   
-  TH2F *heng = (TH2F*) om->GetObject(sf->GetCalcMatName(DET),sf->GetListName(DET)); 
+  TH2F *heng = (TH2F*) om->GetObject(sf->GetCalcMatName(ion,true,DET),sf->GetListName(DET)); 
   if(!heng || heng->Integral()==0){
-     printf("{TDataManager} Warning :  Calculated energy matrix '%s' not found.\n",sf->GetCalcMatName(true,DET));
+     printf("{TDataManager} Warning :  Calculated energy matrix '%s' not found.\n",sf->GetCalcMatName(ion,true,DET));
      return;
   }
 
@@ -340,16 +342,31 @@ void TDataManager::MakeCalGraph(UInt_t DET, UInt_t FS, Option_t *opt){
   g->Dump();
 
   if(g->GetN()<3)
-     printf("{TDataManager} Warning :  There are %i points in '%s'.\n",g->GetN(),sf->GetCalGraphName(true,DET,FS));
+     printf("{TDataManager} Warning :  There are %i points in '%s'.\n",g->GetN(),sf->GetCalGraphName(ion,true,DET,FS));
 
-  // Fit the graph
+/*  // Fit the graph
   std::string fitopt = opt;
   if(fitopt.compare("pol1")==0)
      TFitManager::FitGraph("pol1",g);
-
+*/
   return;
 }
 
 void TDataManager::CombineGraphs(UInt_t DET, UInt_t FS, Option_t *opt){
 
+  std::vector<std::string> ionopts;
+  std::string optstring = opt;
+  
+  std::vector<std::string> runions = TSharcInput::Get()->GetRunIons();
+  for(int i=0; i<runions.size();i++){
+    if(optstring.find(runions.at(i).c_str())!=std::string::npos)
+       ionopts.push_back(runions.at(i));
+  }
+  std::vector<std::string> srcions = TSharcInput::Get()->GetSrcIons();
+  for(int i=0; i<srcions.size();i++){
+    if(optstring.find(srcions.at(i).c_str())!=std::string::npos)
+       ionopts.push_back(srcions.at(i));
+  }
+
+  
 }

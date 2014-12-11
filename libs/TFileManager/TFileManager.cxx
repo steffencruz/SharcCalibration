@@ -13,10 +13,11 @@ void TFileManager::Clear(Option_t *opt) { }
 
 void TFileManager::ReadList(TList *list, Option_t *opt){
   TObjectManager *om = TObjectManager::Get();
-  om->CreateList(list->GetName());
+  //om->GetList(list->GetName());
   TIter iter((TList*)list);
   while(TObject *listobj = iter.Next())
-    om->AddObjectToList(listobj,list->GetName());
+    om->GetList(list->GetName())->Add(listobj); //??:@#%$@#(*@#(*
+//om->AddObjectToList(listobj,list->GetName());
 }
 
 
@@ -28,14 +29,13 @@ void TFileManager::ReadKeys(TDirectoryFile *currentdir) {
   std::string currentpathname = currentdir->GetPath();
   currentpathname.assign(currentpathname.substr(currentpathname.find('/')+1));
   currentpathname += '/';
-  TObjectManager::Get()->CreateList(currentpathname.c_str());
+  TObjectManager::Get()->GetList(currentpathname.c_str());
   
   while(TKey *key = (TKey*)iter.Next()) {
     TObject *obj = key->ReadObj();
 //    obj->Print();  
     if(obj->InheritsFrom("TSharcInput")){
       TSharcInput *si = (TSharcInput*)obj;
-      si->Print();
     } else if(obj->InheritsFrom("TDirectoryFile"))
       ReadKeys((TDirectoryFile*)obj);
     else
@@ -61,8 +61,7 @@ Bool_t TFileManager::ReadFile(const char *fname, Option_t *opt){
   ReadKeys((TDirectoryFile*)f);
   UInt_t nobjread = TObjectManager::Get()->GetMasterList()->GetEntries();
   std::string siname = TSharcInput::Get()->GetInfileName();
-  printf("SHARC INPUT NAME IS %s ???!?!!???**^$%^$$%%^$%\n\n",siname.c_str());
-  if(nobjread){
+  if(siname.length() && nobjread){
     printf("{TFileManager} Loaded %i TObjects into calibration session, and TSharcInput '%s'.\n",nobjread,TSharcInput::Get()->GetInfileName());
     return true;
   } else {

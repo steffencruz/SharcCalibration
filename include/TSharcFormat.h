@@ -19,28 +19,28 @@ class TSharcFormat : public TObject {
     virtual void Clear(Option_t *opt = "");
 
     //Uncalibrated spectra cannot be grouped
-    const char *GetChgMatName(Bool_t path=false, Int_t det=-1, Int_t fs=-1)                { return GetObjectName(fChgMatName.c_str(),path,det,fs);      }
-    const char *GetCentMatName(Bool_t path=false, Int_t det=-1)                            { return GetObjectName(fCentMatName.c_str(),path,det);        }
-    const char *GetCalcMatName(Bool_t path=false, Int_t det=-1)                            { return GetObjectName(fCalcMatName.c_str(),path,det);        }
-    const char *GetChgSpecName(Bool_t path=false, Int_t det=-1, Int_t fs=-1, Int_t bs=-1)  { return GetObjectName(fChgSpecName.c_str(),path,det,fs,bs);  }
-    const char *GetCalGraphName(Bool_t path=false, Int_t det=-1, Int_t fs=-1)              { return GetObjectName(fCalGraphName.c_str(),path,det,fs);    }
-    const char *GetMulGraphName(Bool_t path=false, Int_t det=-1, Int_t fs=-1)              { return GetObjectName(fMulGraphName.c_str(),path,det,fs);    }
+    const char *GetChgMatName  (const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fChgMatName.c_str(),ion,path,det,fs)    ;}
+    const char *GetCentMatName (const char *ion="",Bool_t path=false,Int_t det=-1)                        {return GetObjectName(fCentMatName.c_str(),ion,path,det)      ;}
+    const char *GetCalcMatName (const char *ion="",Bool_t path=false,Int_t det=-1)                        {return GetObjectName(fCalcMatName.c_str(),ion,path,det)      ;}
+    const char *GetChgSpecName (const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1){return GetObjectName(fChgSpecName.c_str(),ion,path,det,fs,bs);}
+    const char *GetCalGraphName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fCalGraphName.c_str(),ion,path,det)     ;}
+    const char *GetMulGraphName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fMulGraphName.c_str(),ion,path,det)     ;}
     //Calibrated spectra can be grouped (ie. plot different detectors together)  
-    const char *GetKinMatName(Bool_t path=false, Int_t det=-1, Int_t fs=-1)                { return GetObjectName(fKinMatName.c_str(),path,det,fs);      }
-    const char *GetResMatName(Bool_t path=false, Int_t det=-1, Int_t fs=-1)                { return GetObjectName(fResMatName.c_str(),path,det,fs);      }
-    const char *GetExcMatName(Bool_t path=false, Int_t det=-1, Int_t fs=-1)                { return GetObjectName(fExcMatName.c_str(),path,det,fs);      }
+    const char *GetKinMatName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1)  {return GetObjectName(fKinMatName.c_str(),ion,path,det,fs)    ;}
+    const char *GetResMatName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1)  {return GetObjectName(fResMatName.c_str(),ion,path,det,fs)    ;}
+    const char *GetExcMatName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1)  {return GetObjectName(fExcMatName.c_str(),ion,path,det,fs)    ;}
 //    static const char *GetExcSpecName(Int_t det=-1, Int_t fs=-1, Int_t bs=-1);
 
     const char *GetListName(Int_t det=-1, Int_t fs=-1, Int_t bs = -1); 
-    const char *GetFitInfoName(Bool_t path=false, Int_t det=-1, Int_t fs=-1, Int_t bs=-1)  { return GetObjectName(fFitInfoName.c_str(),path,det,fs,bs);  }
+    const char *GetFitInfoName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1) {return GetObjectName(fFitInfoName.c_str(),ion,path,det,fs,bs);}
 
     // as ChgSpec and ExcSpec are simply projections, they will already be formatted
-    TObject *CreateObject(const char *objtype, UInt_t DET, Int_t FS=-1);
+    TObject *CreateObject(const char *objtype, Option_t *opt, UInt_t DET, Int_t FS=-1);
 
   private:
     TSharcFormat(); 
     static TSharcFormat *fSharcFormat;
-    const char *GetObjectName(const char*, Bool_t path = false, Int_t DET=-1, Int_t FS=-1, Int_t BS=-1);
+    const char *GetObjectName(const char *objname,const char *ion, Bool_t path, Int_t DET, Int_t FS=-1, Int_t BS=-1);
 
     static const std::string fChgMatName  ;    // [TH2F] Charge vs BackStrip    [p+d+c],[a]
     static const std::string fChgSpecName ;    // [TH1D] Charge                 [p+d+c],[a]

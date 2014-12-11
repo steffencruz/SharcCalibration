@@ -17,18 +17,55 @@ TFitInfo::~TFitInfo() { }
 
 TFitInfo::TFitInfo(TF1 *func,Double_t *xvals, Double_t *yvals, UInt_t npeaks, Bool_t flag, const char *finame) { 
   
+  SetNPeaks(npeaks);
+  
+  char buffer[16];
+  fpeaknames.resize(npeaks);
+  
   for(int i=0; i<npeaks; i++){
      SetXY(xvals[i],yvals[i]);
+     sprintf(buffer,"PEAK%i",i);
+     SetPeakName(i,buffer);
   }
   SetFunction(func);
   SetStatus(flag);
   SetName(finame);
+
 }
 
 void TFitInfo::SetInfoName(const char *infoname){
 
   TNamed::SetName(infoname);
   return;
+}
+
+void TFitInfo::SetPeakNames(std::vector<std::string> ions){
+  
+  for(int i=0; i<ions.size();i++){
+    if(i>=GetNPeaks())
+       break;
+    SetPeakName(i,ions.at(i).c_str());
+  }  
+}
+
+Double_t TFitInfo::GetX(const char *name){
+  
+  for(int i=0; i<fpeaknames.size(); i++){
+    if(fpeaknames.at(i).compare(name)==0)
+       return GetX(i);
+  }
+  printf("{TFitInfo} Warning :  Peak name '%s' not recognised. X was not returned. \n",name);
+  return 0.0;
+}
+
+Double_t TFitInfo::GetY(const char *name){
+  
+  for(int i=0; i<fpeaknames.size(); i++){
+    if(fpeaknames.at(i).compare(name)==0)
+       return GetY(i);
+  }
+  printf("{TFitInfo} Warning :  Peak name '%s' not recognised. Y was not returned. \n",name);
+  return 0.0;
 }
 
 void TFitInfo::Print(Option_t *opt) {
@@ -43,49 +80,3 @@ void TFitInfo::Print(Option_t *opt) {
 
 void TFitInfo::Clear(Option_t *opt) {}
 
-/*
-TF1 *TFitInfo::MakeChgSpec(const char *fname, UInt_t npeaks, Double_t *xpos, Double_t *ypos, Double_t *sigs){
-
-  TF1 *f = 0;
-
-  if(!xpos || !ypos){
-     printf("{TFitInfo} Error: peak centroid positions must be provided.\n"); 
-     return f;
-  }
-
-  TGRSIFunctions::SetNfitPeaks(npeaks);
-  std::vector<std::string> pnames = TGRSIFunctions::GetParNames(fname);
-  UInt_t npars = parnames.size();
-  
-  f = new TF1(fname,fname,0.0,1.0,npars);
-
-  Double_t var;
-  for(int i=0; i<npars; i++){
-
-    f->SetParName(i,pnames.at(i).c_str());
-
-    if(pnames.a(i).find("BG")!=string::npos)
-       f->SetParameter(i,0.0); // initiate background terms to zero
-    else if(pnames.at(i).find("PEAK")!=string::npos){
-      UInt_t peaknum = atoi(pnames.at(i).at(4).c_str());
-      UInt_t peakvar = atoi(pnames.at(i).at(6).c_str());
-      switch (peakvar){
-        case 0:
-          var = ypos[peaknum]; // first peak parameter is always height
-          break;
-        case 1:
-          var = xpos[peaknum]; // second peak parameter is always mean
-          break;
-       default: 
-          var = sigs[peaknum]; // all continuing parameters are widths
-      }
-      f->SetParameter(i,var);  
-    } else{
-      printf("{TFitInfo} Warning: unrecognised parameter name '%s'. Parameter not set.\n",pnames.at(i).c_str());
-      f->SetParameter(i,0.0);
-    }
-  }
-
-  return f;
-}
-*/

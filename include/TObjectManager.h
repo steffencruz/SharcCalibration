@@ -27,11 +27,13 @@ class TObjectManager : public TObject  {
   public:
 
     void AddObjectToList(TObject *object,const char *listname);
-    void CreateList(const char *listname);
 
     TObject *GetObject(const char *oname, const char *listname=0);
-    TList *GetMasterList() { return fMasterList; }
+    UInt_t CountObjectsOfType(const char *oname, TList *list=0);
 
+    TList *GetList(const char *listname);
+
+    TList *GetMasterList() { return fMasterList; }
     
 
  ClassDef(TObjectManager,1)

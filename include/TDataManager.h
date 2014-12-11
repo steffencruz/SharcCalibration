@@ -43,9 +43,9 @@ class TDataManager: public TNamed {
     void MakeChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt = "");
     void FitChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt = "");
 
-    void MakeCentroidMat(UInt_t DET, Option_t *opt = "");
-    void MakeCalcEnergyMat(UInt_t DET, Option_t *opt = "");
-    void MakeCalGraph(UInt_t DET, UInt_t FS, Option_t *opt = "");
+    void MakeCentroidMat(const char *ion, UInt_t DET, Option_t *opt);
+    void MakeCalcEnergyMat(const char *ion, UInt_t DET, Option_t *opt);
+    void MakeCalGraph(const char *ion, UInt_t DET, UInt_t FS, Option_t *opt = "");
 
     void CombineGraphs(UInt_t DET, UInt_t FS, Option_t *opt = "");
 
@@ -65,8 +65,9 @@ class TDataManager: public TNamed {
 		static TTigressHit *fTigressHit;
 		
 	public: // SharcInput parameter setters  
-    void NewChain(); // creates chain and sets branches appropriately
-		void AddToChain(const char *tree, const char *dir = "");
+    void NewChain(Option_t *opt = ""); // creates chain and sets branches appropriately
+		Bool_t SetChain(Option_t *opt);
+    void AddToChain(const char *tree, const char *dir = "");
     TChain *GetChain() { return fChain; }
 
   private: // SharcInputParameters
