@@ -13,6 +13,8 @@
 #include <TFitManager.h>
 #include <TFitInfo.h>
 #include <TSharcFormat.h>
+#include <TCalibrate.h>
+
 
 #include "TKinematics.h"
 #include "TSharcAnalysis.h"
@@ -235,17 +237,42 @@ void TDataManager::MakeChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t
   return;
 }
 
+
+void TDataManager::MakeChargeSpectrumSrc(UInt_t DET, UInt_t FS, Option_t *opt){
+  
+  TObjectManager *om = TObjectManager::Get();
+  TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetChgMatName(opt,true,DET,FS),TSharcFormat::Get()->GetListName(DET,FS));
+  if(!h)
+    return;
+  
+  TH1D *h1 = h->ProjectionY(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS)); //,BS),BS,BS); // project out charge matrix
+  h1->SetTitle(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS));
+
+  om->GetList(TSharcFormat::Get()->GetListName(DET,FS));
+  om->AddObjectToList(h1,TSharcFormat::Get()->GetListName(DET,FS));
+
+  return;
+}
+
+
+
+//void TDataManager::FitChargeSpectrum()            UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt){
 void TDataManager::FitChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt){
 
   TObjectManager *om = TObjectManager::Get();
   TSharcInput *si = TSharcInput::Get();
 
-  TH1D *h = (TH1D*)om->GetObject(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS,BS),TSharcFormat::Get()->GetListName(DET,FS,BS));
+  TH1D *h = 0;
+  if(strncmp(opt,"Run",3)==0)
+    h = (TH1D*)om->GetObject(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS,BS),TSharcFormat::Get()->GetListName(DET,FS,BS));
+  else if(strncmp(opt,"Src",3)==0)
+    h = (TH1D*)om->GetObject(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS),TSharcFormat::Get()->GetListName(DET,FS));
+
   if(!h)
     return;
 
   UInt_t ngroup = 1;
-  h->Rebin(ngroup);//si->GetRebinGroup(opt));
+  //h->Rebin(ngroup);//si->GetRebinGroup(opt));
 
   TSpectrum *s = TFitManager::PeakSearch(h,si->GetIons(opt).size(),si->GetChgSpecResolution(opt)/(double)ngroup,si->GetChgSpecThreshold(opt));
   if(!s)
@@ -261,7 +288,7 @@ void TDataManager::FitChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t 
   TFitInfo *finfo = TFitManager::FitHist(fname,h,&pars[0],pars.size(),xmin,xmax);
 
   finfo->SetInfoName(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS));
-  finfo->SetPeakNames(si->GetIons(opt));
+  finfo->SetPeakNames(si->GetIons(opt),opt);
   om->AddObjectToList(finfo,TSharcFormat::Get()->GetListName(DET,FS,BS));
   
   return;
@@ -278,9 +305,9 @@ void TDataManager::MakeCentroidMat(const char *ion, UInt_t DET, Option_t *opt){
   for(int FS=0; FS<24; FS++){
     for(int BS=0; BS<8; BS++){
 //      printf("Looking for Fitinfo %s...\n",TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS));
-      tfi = (TFitInfo*) om->GetObject(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS),TSharcFormat::Get()->GetListName(DET,FS,BS));  // haha TRUE DET FSBS
-      if(!tfi)
-         continue;
+        tfi = (TFitInfo*) om->GetObject(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS),TSharcFormat::Get()->GetListName(DET,FS,BS));  // haha TRUE DET FSBS
+        if(!tfi)
+          continue;
 /*      else if(!tfi->GetStatus()){ // check that the spectrum was fit
         printf("This one looks bad!!\n");
         tfi->Print();
@@ -303,6 +330,7 @@ void TDataManager::MakeCalcEnergyMat(const char *ion, UInt_t DET, Option_t *opt)
   
   TObjectManager *om = TObjectManager::Get();
   TSharcInput *si = TSharcInput::Get();
+  //printf("i am here\n");
   TH2F *h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetCalcMatName(ion,true,DET),TSharcFormat::Get()->GetListName(DET));  // haha TRUE DET
   if(!h)
      return;
@@ -317,7 +345,9 @@ void TDataManager::MakeCalcEnergyMat(const char *ion, UInt_t DET, Option_t *opt)
 
       h->SetBinContent(FS,BS,emeas.at(0)); 
       h->SetBinError(FS,BS,100.0); // currently hard coded
-      printf("h->GetBinContent(%02i,%02i) = %.2f\n",FS,BS,h->GetBinContent(FS,BS));
+      if(TCalibrate::Get()->GetFlag("DEBUG"))
+        printf("h->GetBinContent(%02i,%02i) = %.2f\n",FS,BS,h->GetBinContent(FS,BS));
+
       emeas.clear();
     }
   }
@@ -336,19 +366,20 @@ void TDataManager::MakeCalGraph(const char *ion, UInt_t DET, UInt_t FS, Option_t
   }
 
   TH2F *hchg = (TH2F*) om->GetObject(sf->GetCentMatName(ion,true,DET),sf->GetListName(DET)); 
-  if(!hchg || hchg->Integral()==0){
+  if(!hchg && TCalibrate::Get()->GetFlag("DEBUG") ){
      printf("{TDataManager} Warning :  Centroid matrix '%s' not found.\n",sf->GetCentMatName(ion,true,DET));
      return;
   }
   
   TH2F *heng = (TH2F*) om->GetObject(sf->GetCalcMatName(ion,true,DET),sf->GetListName(DET)); 
-  if(!heng || heng->Integral()==0){
+  if(!heng){
      printf("{TDataManager} Warning :  Calculated energy matrix '%s' not found.\n",sf->GetCalcMatName(ion,true,DET));
      return;
   }
 
   for(int BS=0;BS<48;BS++){
-     printf("hchg->GetBinContent(FS,BS) = %.2f\t heng->GetBinContent(FS,BS) = %.2f\n",hchg->GetBinContent(FS,BS),heng->GetBinContent(FS,BS));
+     if(TCalibrate::Get()->GetFlag("DEBUG"))
+        printf("hchg->GetBinContent(FS,BS) = %.2f\t heng->GetBinContent(FS,BS) = %.2f\n",hchg->GetBinContent(FS,BS),heng->GetBinContent(FS,BS));
      if(hchg->GetBinContent(FS,BS)==0 || heng->GetBinContent(FS,BS)==0)
         continue;
      g->SetPoint(BS,hchg->GetBinContent(FS,BS),heng->GetBinContent(FS,BS));
@@ -357,7 +388,7 @@ void TDataManager::MakeCalGraph(const char *ion, UInt_t DET, UInt_t FS, Option_t
   g->SetLineColor(TSharcInput::Get()->GetIonNumber(ion,opt)+3); // will be identical between run and source data
 //  g->Dump();
 
-  if(g->GetN()<3)
+  if(g->GetN()<3 && TCalibrate::Get()->GetFlag("DEBUG"))
      printf("{TDataManager} Warning :  There are %i points in '%s'.\n",g->GetN(),sf->GetCalGraphName(ion,true,DET,FS));
 
   // Fit the graph

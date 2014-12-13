@@ -26,6 +26,7 @@ nameless {
   SrcChargeSpecFitRange   : 2000 8000
   SrcChargeSpecResolution : 20
   SrcChargeSpecThreshold  : 0.25
+  SrcIonName              : Alpha // not used yet but really helpful for naming stuff??
   SrcIonType              : Alpha0
   SrcIonType              : Alpha1
   SrcIonType              : Alpha2
@@ -40,9 +41,7 @@ nameless {
   // src
   srcdatadir           : /tig/grsmid01_data4/tigress/PeterSteffen/Dec9_2014/     //     /tig/grsmid01_data4/tigress/PeterSteffen/sr95/srcdata/
   srcdata              : analysis*
-//  srcdata              : analysis28770_000*
-//  srcdata              : analysis28770_001*
-//  srcdata              : analysis28770_003*
+//  srcdata              : analysis28770_000.root
   
   // cuts
   cutfiledir           : /tig/grsmid01_data4/tigress/PeterSteffen/sr95/cutfiles/

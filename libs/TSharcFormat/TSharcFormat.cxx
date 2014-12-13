@@ -10,37 +10,19 @@ ClassImp(TSharcFormat)
 
 TSharcFormat *TSharcFormat::fSharcFormat = 0;
 
-//std::string TSharcFormat::fChgMatName;        // [TH2F] Charge vs BackStrip    [p+d+c],[a]
-//std::string TSharcFormat::fChgSpecName  = "ChargeSpectrum";          // [TH1D] Charge                 [p+d+c],[a]
-//std::string TSharcFormat::fCentMatName  = "CentroidMatrix";          // [TH2F] Centroid               [p+d+c],[a]
-//std::string TSharcFormat::fCalcMatName  = "EnergyCalcMatrix";        // [TH2F] Calculated energy      [p+d+c],[a]
-//std::string TSharcFormat::fCalGraphName = "CalibrationGraph";        // [TGE]  Energy vs Charge       [p+d+a]
-//std::string TSharcFormat::fMulGraphName = "MultiGraph";              // [TGE]  Energy vs Charge       [p+d+a]
-//std::string TSharcFormat::fKinMatName   = "KinematicsMatrix";        // [TH2F] Energy vs ThetaLab     [p],[d]
-//std::string TSharcFormat::fResMatName   = "KinematicsResidual";      // [TH2F] Energy-Kin vs ThetaLab [p],[d]
-//std::string TSharcFormat::fExcMatName   = "ExcitationMatrix";        // [TH2F] Excitation vs ThetaLab [p],[d]
-//std::string TSharcFormat::fExcSpecName  = "ExcitationSpectrum";      // [TH1D] Excitation             [p],[d]
-
-//std::string TSharcFormat::fFitInfoName  = "FitInfo";                 // [TFitInfo] container for fit results
-
-
-const std::string TSharcFormat::fChgMatName   = "ChargeMatrix";        // [TH2F] Charge vs BackStrip    [p+d+c],[a]
-const std::string TSharcFormat::fChgSpecName  = "ChargeSpectrum";          // [TH1D] Charge                 [p+d+c],[a]
-const std::string TSharcFormat::fCentMatName  = "CentroidMatrix";          // [TH2F] Centroid               [p+d+c],[a]
-const std::string TSharcFormat::fCalcMatName  = "EnergyCalcMatrix";        // [TH2F] Calculated energy      [p+d+c],[a]
-const std::string TSharcFormat::fCalGraphName = "CalibrationGraph";        // [TGE]  Energy vs Charge       [p+d+a]
-const std::string TSharcFormat::fMulGraphName = "MultiGraph";              // [TGE]  Energy vs Charge       [p+d+a]
-const std::string TSharcFormat::fKinMatName   = "KinematicsMatrix";        // [TH2F] Energy vs ThetaLab     [p],[d]
-const std::string TSharcFormat::fResMatName   = "KinematicsResidual";      // [TH2F] Energy-Kin vs ThetaLab [p],[d]
-const std::string TSharcFormat::fExcMatName   = "ExcitationMatrix";        // [TH2F] Excitation vs ThetaLab [p],[d]
-const std::string TSharcFormat::fExcSpecName  = "ExcitationSpectrum";      // [TH1D] Excitation             [p],[d]
+const std::string TSharcFormat::fChgMatName      = "ChargeMatrix";            // [TH2F] Charge vs BackStrip    [p+d+c],[a]
+const std::string TSharcFormat::fChgSpecName     = "ChargeSpectrum";          // [TH1D] Charge                 [p+d+c],[a]
+const std::string TSharcFormat::fCentMatName     = "CentroidMatrix";          // [TH2F] Centroid               [p+d+c],[a]
+const std::string TSharcFormat::fCentChiMatName  = "CentroidChi2Matrix";      // [TH2F] Centroid chi squared   [p+d+c],[a]
+const std::string TSharcFormat::fCalcMatName     = "EnergyCalcMatrix";        // [TH2F] Calculated energy      [p+d+c],[a]
+const std::string TSharcFormat::fCalGraphName    = "CalibrationGraph";        // [TGE]  Energy vs Charge       [p+d+a]
+const std::string TSharcFormat::fMulGraphName    = "MultiGraph";              // [TGE]  Energy vs Charge       [p+d+a]
+const std::string TSharcFormat::fKinMatName      = "KinematicsMatrix";        // [TH2F] Energy vs ThetaLab     [p],[d]
+const std::string TSharcFormat::fResMatName      = "KinematicsResidual";      // [TH2F] Energy-Kin vs ThetaLab [p],[d]
+const std::string TSharcFormat::fExcMatName      = "ExcitationMatrix";        // [TH2F] Excitation vs ThetaLab [p],[d]
+const std::string TSharcFormat::fExcSpecName     = "ExcitationSpectrum";      // [TH1D] Excitation             [p],[d]
 
 const std::string TSharcFormat::fFitInfoName  = "FitInfo";                 // [TFitInfo] container for fit results
-
-
-
-
-
 
 TSharcFormat *TSharcFormat::Get() { 
   if(!fSharcFormat)
@@ -99,14 +81,21 @@ TObject *TSharcFormat::CreateObject(const char *objtype, Option_t *opt, UInt_t D
     return (TObject*) h;
   } else if(name.compare(GetCentMatName())==0){
      
-    TH2F *h = new TH2F(GetCentMatName(opt,true,DET),GetCentMatName(opt,true,DET),48,0,48,24,0,24);
+    TH2F *h = new TH2F(GetCentMatName(opt,true,DET),GetCentMatName(opt,true,DET),24,0,24,48,0,48);
+    h->GetYaxis()->SetTitle("Back Strip");
+    h->GetXaxis()->SetTitle("Front Strip");
+    return (TObject*) h;
+
+  } else if(name.compare(GetCentChiMatName())==0){
+     
+    TH2F *h = new TH2F(GetCentChiMatName(opt,true,DET),GetCentChiMatName(opt,true,DET),24,0,24,48,0,48);
     h->GetYaxis()->SetTitle("Back Strip");
     h->GetXaxis()->SetTitle("Front Strip");
     return (TObject*) h;
 
   } else if(name.compare(GetCalcMatName())==0){
 
-    TH2F *h = new TH2F(GetCalcMatName(opt,true,DET),GetCalcMatName(opt,true,DET),48,0,48,24,0,24);
+    TH2F *h = new TH2F(GetCalcMatName(opt,true,DET),GetCalcMatName(opt,true,DET),24,0,24,48,0,48);
     h->GetYaxis()->SetTitle("Back Strip");
     h->GetXaxis()->SetTitle("Front Strip");
     return (TObject*) h;
@@ -119,6 +108,7 @@ TObject *TSharcFormat::CreateObject(const char *objtype, Option_t *opt, UInt_t D
     gerrs->GetXaxis()->SetTitle("Charge [/Integration]");
     gerrs->GetYaxis()->SetTitle("Energy calculated [keV]");
     gerrs->GetYaxis()->SetTitleOffset(1.4);
+    gerrs->SetEditable(false);
     return (TObject*) gerrs;
   
   } else if(name.compare(GetMulGraphName())==0){

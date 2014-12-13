@@ -1,6 +1,10 @@
 #include "TCalibrate.h"
 
-#include <TROOT.h>
+#include <map>
+#include <utility>
+
+#include <TH1.h>
+#include <TH2.h>
 
 #include <TDataManager.h>
 #include <TFileManager.h>
@@ -30,7 +34,6 @@ TCalibrate *TCalibrate::Get(){
 }
 
 TCalibrate::TCalibrate(Bool_t flag){
-
   Clear();
   //other stuff .. ?
 }
@@ -39,11 +42,17 @@ void TCalibrate::Print(Option_t *opt) {
 
   printf("\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
   printf(DCYAN"\nTCalibrate:"RESET_COLOR"");
-
+/*
+  std::vector<std::string> v;
   printf(DYELLOW"\n\tCal flags :-"RESET_COLOR"\n");
-  printf("\tfSharcInputSet      status : %s\n",GetFlag("SharcInput")           ? "set" : "not set");
-  printf("\tfRunCalibration     status : %s\n",GetFlag("DeltaCalStyle","Run")  ? "enabled" : "disabled");
-  printf("\tfSrcCalibration     status : %s\n",GetFlag("DeltaCalStyle","Src")  ? "enabled" : "disabled");
+  for(std::map<std::string,bool>::iterator it = fCalFlags.begin(); it != fCalFlags.end(); ++it) {
+    printf("\t%24s status : %s\n",it->first.c_str(),it->second?"true":"false");
+  }
+*/
+  printf(DYELLOW"\n\tCal flags :-"RESET_COLOR"\n");
+  printf("\tfSharcInputFlag     status : %s\n",GetFlag("SharcInput")           ? "set" : "not set");
+  printf("\tfRunCalibrationFlag status : %s\n",GetFlag("DeltaCalStyle","Run")  ? "enabled" : "disabled");
+  printf("\tfSrcCalibrationFlag status : %s\n",GetFlag("DeltaCalStyle","Src")  ? "enabled" : "disabled");
   
   printf(DYELLOW"\n\tRun flags :-"RESET_COLOR"\n");
   printf("\tfRunChgMatsFlag     status : %s\n",GetFlag("ChgMats"  ,"Run") ? "complete!" : "unfinished..");
@@ -69,27 +78,27 @@ void TCalibrate::Print(Option_t *opt) {
 
 void TCalibrate::Clear(Option_t *opt) {
   
-  SetFlag("SharcInput","",false);
-  SetFlag("CalibrationFlag","Run",false); 
-  SetFlag("CalibrationFlag","Src",false); 
+  SetFlag("SharcInput",false);
+  SetFlag("CalibrationFlag",false,"Run"); 
+  SetFlag("CalibrationFlag",false,"Src"); 
   
-  SetFlag("ChgMats"  ,"Run",false);
-  SetFlag("ChgSpecs" ,"Run",false);
-  SetFlag("ChgFits"  ,"Run",false);
+  SetFlag("ChgMats"  ,false,"Run");
+  SetFlag("ChgSpecs" ,false,"Run");
+  SetFlag("ChgFits"  ,false,"Run");
   std::vector<std::string> runions = TSharcInput::Get()->GetIons("Run");
-  SetFlag("CentMats" ,"Run",false);
-  SetFlag("CalcMats" ,"Run",false);
-  SetFlag("CalGraphs","Run",false);
-  SetFlag("MulGraphs","Run",false);
+  SetFlag("CentMats" ,false,"Run");
+  SetFlag("CalcMats" ,false,"Run");
+  SetFlag("CalGraphs",false,"Run");
+  SetFlag("MulGraphs",false,"Run");
   
-  SetFlag("ChgMats"  ,"Src",false);
-  SetFlag("ChgSpecs" ,"Src",false);
-  SetFlag("ChgFits"  ,"Src",false);
+  SetFlag("ChgMats"  ,false,"Src");
+  SetFlag("ChgSpecs" ,false,"Src");
+  SetFlag("ChgFits"  ,false,"Src");
   std::vector<std::string> srcions = TSharcInput::Get()->GetIons("Src");
-  SetFlag("CentMats" ,"Src",false);
-  SetFlag("CalcMats" ,"Src",false);
-  SetFlag("CalGraphs","Src",false);
-  SetFlag("MulGraphs","Src",false);
+  SetFlag("CentMats" ,false,"Src");
+  SetFlag("CalcMats" ,false,"Src");
+  SetFlag("CalGraphs",false,"Src");
+  SetFlag("MulGraphs",false,"Src");
  
 }
 
@@ -118,45 +127,63 @@ void TCalibrate::LoadCal(const char *name){
   if(!OpenCalibration(name))
      return;
 
-  SetFlag("SharcInput","",true);
-  SetFlag("DeltaCalStyle","Run",TSharcInput::Get()->GetRunDeltaCalFlag()); 
-  SetFlag("DeltaCalStyle","Src",TSharcInput::Get()->GetSrcDeltaCalFlag()); 
+  SetFlag("SharcInput",true);
+  SetFlag("DeltaCalStyle",TSharcInput::Get()->GetRunDeltaCalFlag(),"Run"); 
+  SetFlag("DeltaCalStyle",TSharcInput::Get()->GetSrcDeltaCalFlag(),"Src"); 
   
   TSharcFormat *sf = TSharcFormat::Get();
   
-  SetFlag("ChgMats"  ,"Run",ExistInFile(  sf->GetChgMatName("Run")));
-  SetFlag("ChgSpecs" ,"Run",ExistInFile( sf->GetChgSpecName("Run")));
-  SetFlag("ChgFits"  ,"Run",ExistInFile( sf->GetFitInfoName("Run")));
+  SetFlag("ChgMats"  ,ExistInFile(  sf->GetChgMatName("Run")),"Run");
+  SetFlag("ChgSpecs" ,ExistInFile( sf->GetChgSpecName("Run")),"Run");
+  SetFlag("ChgFits"  ,ExistInFile( sf->GetFitInfoName("Run")),"Run");
   std::vector<std::string> runions = TSharcInput::Get()->GetIons("Run");
-  SetFlag("CentMats" ,"Run",ExistInFile( sf->GetCentMatName(runions.at(0).c_str())));
-  SetFlag("CalcMats" ,"Run",ExistInFile( sf->GetCalcMatName(runions.at(0).c_str())));
-  SetFlag("CalGraphs","Run",ExistInFile(sf->GetCalGraphName(runions.at(0).c_str())));
-  SetFlag("MulGraphs","Run",ExistInFile(sf->GetMulGraphName(runions.at(0).c_str())));
+  SetFlag("CentMats" ,ExistInFile( sf->GetCentMatName(runions.at(0).c_str())),"Run");
+  SetFlag("CalcMats" ,ExistInFile( sf->GetCalcMatName(runions.at(0).c_str())),"Run");
+  SetFlag("CalGraphs",ExistInFile(sf->GetCalGraphName(runions.at(0).c_str())),"Run");
+  SetFlag("MulGraphs",ExistInFile(sf->GetMulGraphName(runions.at(0).c_str())),"Run");
   
-  SetFlag("ChgMats"  ,"Src",ExistInFile(  sf->GetChgMatName("Src")));
-  SetFlag("ChgSpecs" ,"Src",ExistInFile( sf->GetChgSpecName("Src")));
-  SetFlag("ChgFits"  ,"Src",ExistInFile( sf->GetFitInfoName("Src")));
+  SetFlag("ChgMats"  ,ExistInFile(  sf->GetChgMatName("Src")),"Src");
+  SetFlag("ChgSpecs" ,ExistInFile( sf->GetChgSpecName("Src")),"Src");
+  SetFlag("ChgFits"  ,ExistInFile( sf->GetFitInfoName("Src")),"Src");
   std::vector<std::string> srcions = TSharcInput::Get()->GetIons("Src");
-  SetFlag("CentMats" ,"Src",ExistInFile( sf->GetCentMatName(srcions.at(0).c_str())));
-  SetFlag("CalcMats" ,"Src",ExistInFile( sf->GetCalcMatName(srcions.at(0).c_str())));
-  SetFlag("CalGraphs","Src",ExistInFile(sf->GetCalGraphName(srcions.at(0).c_str())));
-  SetFlag("MulGraphs","Src",ExistInFile(sf->GetMulGraphName(srcions.at(0).c_str())));
+  SetFlag("CentMats" ,ExistInFile( sf->GetCentMatName(srcions.at(0).c_str())),"Src");
+  SetFlag("CalcMats" ,ExistInFile( sf->GetCalcMatName(srcions.at(0).c_str())),"Src");
+  SetFlag("CalGraphs",ExistInFile(sf->GetCalGraphName(srcions.at(0).c_str())),"Src");
+  SetFlag("MulGraphs",ExistInFile(sf->GetMulGraphName(srcions.at(0).c_str())),"Src");
+
 }
 
 Bool_t TCalibrate::GetFlag(const char *flagname, Option_t *opt){
-  std::string str = Form("f%s%sFlag",opt,flagname);
+  std::string str = Form("f%s%sFlag",opt,flagname);  
+  
+  //if(fCalFlags.count("fDEBUGFlag") && fCalFlags["fDEBUGFlag"]){
+   if(fCalFlags.count(str)==0){
+     printf("{TCalibrate} Warning : Cannot get flag %s because it doesn't exist. Returning false\n",str.c_str());
+     return false;
+   //} else 
+   //  printf("{TCalibrate} Info : Flag '%s' status is %s\n",flagname,fCalFlags[str]);
+  }
   return fCalFlags[str];
 }
 
-void TCalibrate::SetFlag(const char *flagname, Option_t *opt, Bool_t flag){
+void TCalibrate::SetFlag(const char *flagname, Bool_t flag, Option_t *opt){
   std::string str = Form("f%s%sFlag",opt,flagname);
+  
   fCalFlags[str] = flag;
-  //printf("Set %s to be %s\t LOOK -> fCalFlags[%s] = %s\n",str.c_str(),flag?"true":"false",str.c_str(),fCalFlags[str]?"true":"false");
+  
+ // if(fCalFlags.count("fDEBUGFlag") && fCalFlags["fDEBUGFlag"])
+ //    printf("{TCalibrate} Info : Flag '%s' set to %s\n",flagname,fCalFlags[str]?"true":"false");
+
+
+
+//  fCalFlags.insert(std::make_pair(str,flag));
 }
 
-void TCalibrate::SaveCal() {
-
-  TFileManager::WriteFile(); // uses TSharcName output file convention and writes TObjectManager's master list
+void TCalibrate::SaveCal(const char *ofname) {
+   // more stuff here? use flags to save only subsets of results??
+  if(!ofname)
+     ofname = TSharcInput::Get()->MakeOutputName();
+  TFileManager::WriteFile(ofname); // uses TSharcName output file convention and writes TObjectManager's master list
 }
 
 Bool_t TCalibrate::InitDeltaCal(const char *ifname) {
@@ -172,78 +199,6 @@ Bool_t TCalibrate::InitDeltaCal(const char *ifname) {
   return true;
 }
 
-void TCalibrate::DeltaCal(const char *ifname) {
-
-  if(!GetFlag("SharcInput")){
-     if(!InitDeltaCal(ifname)){
-       printf("{TCalibrate} Warning :  Bad input file, '%s'... You're better than this.\n",ifname);
-       return;
-     }
-  }
-  
-  if(GetFlag("DeltaCalStyle","Run")){
-    const char *failedat = CalibrateSeparate("Run");
-    if(failedat)
-      printf(DRED"{TCalibrate} FAIL : ["DMAGENTA"Run"DRED"] Calibration aborted at "DBLUE"%s"DRED".. Fix the problems before proceeding."RESET_COLOR"\n",failedat);
-    else 
-      printf(DGREEN"{TCalibrate} Message : ["DCYAN"Run"DGREEN"] Calibration graphs have been successfully produced."RESET_COLOR"\n");
-
-  }
-  if(GetFlag("DeltaCalStyle","Src")){
-    const char *failedat = CalibrateSeparate("Src");
-    if(failedat)
-      printf(DRED"{TCalibrate} FAIL : ["DMAGENTA"Src"DRED"] Calibration aborted at "DBLUE"%s"DRED".. Fix the problems before proceeding."RESET_COLOR"\n",failedat);
-    else 
-      printf(DGREEN"{TCalibrate} Message : ["DCYAN"Src"DGREEN"] Calibration graphs have been successfully produced."RESET_COLOR"\n");
-  }
-
-  SaveCal();
-  return;
-// FROM THIS POINT ON WE DON'T DEAL WITH RUN & SRC DATA, JUST COMBINED DATA
-  // fit calgraphs
-  // extract coefficients
-  // write coefficients
-  // profit
-  
-}
-
-const char *TCalibrate::CalibrateSeparate(Option_t *opt){
-  
-  if(!GetFlag("ChgMats",opt))
-    if(!MakeChargeMatrices(opt))
-      return "MakeChargeMatrices";
-  SetFlag("ChgMats",opt,true);
-  //SaveCal();
-  
-  if(!GetFlag("ChgSpecs",opt) || !GetFlag("ChgFits",opt))
-    if(!GetCentroidsFromData(opt))
-      return "GetCentroidsFromData";
-  SetFlag("ChgSpecs",opt,true);
-  SetFlag("ChgFits",opt,true);
-  //SaveCal(); 
-  
-  if(!GetFlag("CentMats",opt))
-    if(!PutCentroidsInMatrix(opt))
-      return "PutCentroidsInMatrix";
-  SetFlag("CentMats",opt,true);
-  //SaveCal(); 
-  
-  Print();
-  if(!GetFlag("CalcMats",opt))
-    if(!PutEnergiesInMatrix(opt))
-      return "PutEnergiesInMatrix";
-  SetFlag("CalcMat",opt,true);
-  SaveCal(); 
-  
-  Print();
-  if(!GetFlag("CalGraphs",opt))
-    if(!ProduceCalGraphs(opt))
-      return "ProduceCalGraphs";
-  SetFlag("CalGraphs",opt,true);
-  SaveCal(); 
-
-  return 0;
-}
 
 Bool_t TCalibrate::MakeChargeMatrices(Option_t *opt){
 
@@ -259,12 +214,14 @@ Bool_t TCalibrate::MakeChargeMatrices(Option_t *opt){
   for(int DET=5;DET<=8;DET++)
      for(int FS=0;FS<24;FS++)
        CreateCalObject(TSharcFormat::Get()->GetChgMatName(),opt,DET,FS); // creates the empty charge matrices
- 
+
   TDataManager::Get()->FillChargeMats();
- 
+
+
   printf(DGREEN"{TCalibrate} Message : ["DCYAN"%s"DGREEN"] Charge matrices have been produced using input trees."RESET_COLOR"\n",opt);
   return true;
 }
+
 
 Bool_t TCalibrate::GetCentroidsFromData(Option_t *opt){
   
@@ -272,17 +229,65 @@ Bool_t TCalibrate::GetCentroidsFromData(Option_t *opt){
   /////////////////////////////////// THIS NEEDS TO BE DONE UNTIL CENTROIDS ARE SATISFACTORY /////////////////////////////////
   // 2.   Make charge spectra
   // 3.   Fit charge spectra
-  TDataManager *dm = TDataManager::Get();
+  TObjectManager *om = TObjectManager::Get();
+  TSharcInput *si = TSharcInput::Get();
+
+  TH2F *h;
+  TH1D *h1;
+  Double_t xmin = si->GetChgSpecFitRangeMin(opt);
+  Double_t xmax = si->GetChgSpecFitRangeMax(opt);
+  const char *fname = si->GetChgSpecFitFunction(opt);
   
-  for(int DET=5;DET<=8;DET++)
-     for(int FS=0;FS<24;FS++)
-        for(int BS=0;BS<8;BS++)
-         dm->MakeChargeSpectrum(DET,FS,BS,opt);
-  
-  for(int DET=5;DET<=8;DET++)
-     for(int FS=0;FS<24;FS++)
-        for(int BS=0;BS<8;BS++)
-         dm->FitChargeSpectrum(DET,FS,BS,opt);
+  for(int DET=5;DET<=8;DET++){
+      if(GetFlag("Quick") && DET!=5){
+         printf("Skipping DET %i [quick flag enabled]\n",DET);
+         continue;
+      }
+     for(int FS=0;FS<24;FS++){
+        
+        h = (TH2F*)om->GetObject(TSharcFormat::Get()->GetChgMatName(opt,true,DET,FS),TSharcFormat::Get()->GetListName(DET,FS));
+        if(!h)
+          continue;
+         
+        for(int BS=0;BS<8;BS++){
+          
+          // Projection (aka Charge Spectrum)
+          if(strcmp(opt,"Run")==0)
+            h1 = h->ProjectionY(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS,BS),BS,BS); // project out each back strip 
+          if(strcmp(opt,"Src")==0){
+            h1 = h->ProjectionY(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS));          // project all back strips together
+            BS = -1;  // this tells sharc format to ignore BS  
+          }
+
+          // Put projection into list
+          h1->SetTitle(TSharcFormat::Get()->GetChgSpecName(opt,true,DET,FS,BS));
+          om->GetList(TSharcFormat::Get()->GetListName(DET,FS,BS));
+          om->AddObjectToList(h1,TSharcFormat::Get()->GetListName(DET,FS,BS));
+
+          // locate peaks (Using TSharcInput settings)
+          TSpectrum *s = TFitManager::PeakSearch(h1,si->GetIons(opt).size(),si->GetChgSpecResolution(opt),si->GetChgSpecThreshold(opt));
+          
+          if(!s){
+             if(BS<0)
+                break;
+            continue;
+           }
+          
+          // fit peaks (Using TSharcInput settings)
+          std::vector<double> pars = TFitManager::GetParameters(fname,s,si->GetChgSpecResolution(opt));
+          TFitInfo *finfo = TFitManager::FitHist(fname,h1,pars.data(),pars.size(),xmin,xmax); 
+          
+          // Set Some names and put TFitInfo into list
+          finfo->SetInfoName(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS));
+          finfo->SetPeakNames(si->GetIons(opt),opt); // calls the peaks Prot,Deut,Alpha0 or whatever
+          om->AddObjectToList(finfo,TSharcFormat::Get()->GetListName(DET,FS,BS));
+
+          //finfo->Print();
+          if(strcmp(opt,"Src")==0) // we don't want multiple copies of Src chg spec, so leave loop
+             break;
+        }
+     }
+  }
 
   printf(DGREEN"{TCalibrate} Message : ["DCYAN"%s"DGREEN"] Charge spectra have been created and fitted using charge matrices."RESET_COLOR"\n",opt);
   return true;
@@ -294,7 +299,7 @@ Bool_t TCalibrate::PutCentroidsInMatrix(Option_t *opt){
   printf(DYELLOW"{TCalibrate} Message : ["DCYAN"%s"DYELLOW"] Centroids will be extracted from charge matrix fits."RESET_COLOR"\n",opt);
   /////////////////////////////////// THIS NEEDS TO BE DONE WHEN CENTROIDS ARE REPRODUCED /////////////////////////////////
   // 4.  Extract charge centroids
-  TDataManager *dm = TDataManager::Get();
+  TObjectManager *om = TObjectManager::Get();
   
   std::vector<std::string> ions = TSharcInput::Get()->GetIons(opt);
   if(ions.size()==0){
@@ -302,13 +307,48 @@ Bool_t TCalibrate::PutCentroidsInMatrix(Option_t *opt){
     return false;
   }
 
-  for(int DET=5;DET<=8;DET++)
-    for(int i=0; i<ions.size(); i++)
-      CreateCalObject(TSharcFormat::Get()->GetCentMatName(),ions.at(i).c_str(),DET); // creates the empty centroid matrices
-  
-  for(int DET=5;DET<=8;DET++)
-    for(int i=0; i<ions.size(); i++)
-      dm->MakeCentroidMat(ions.at(i).c_str(),DET,opt); // fills the empty centroid matrices
+   TH2F *mat = 0;
+   TH2F *chimat = 0;
+
+   TFitInfo *tfi = 0;
+   for(int DET=5;DET<=8;DET++){
+      if(GetFlag("Quick") && DET!=5){
+         printf("Skipping DET %i [quick flag enabled]\n",DET);
+         continue;
+      }
+      for(int i=0; i<ions.size(); i++) {
+         
+         mat = (TH2F*)CreateCalObject(TSharcFormat::Get()->GetCentMatName(),ions.at(i).c_str(),DET); // creates the empty centroid matrices
+         chimat = (TH2F*)CreateCalObject(TSharcFormat::Get()->GetCentChiMatName(),ions.at(i).c_str(),DET);//create empty chisquare matrix for fit centroids
+         
+         for(int FS=0;FS<24;FS++){
+            if(strcmp(opt,"Run")==0) {
+               for(int BS=0;BS<8;BS++){
+                  tfi = (TFitInfo*) om->GetObject(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS),
+                                                  TSharcFormat::Get()->GetListName(DET,FS,BS));  // haha TRUE DET FSBS
+                  if(!tfi)
+                     continue;
+                  mat->SetBinContent(FS,BS,tfi->GetX(tfi->GetPeakNum(ions.at(i).c_str())));
+                  mat->SetBinError(FS,BS,tfi->GetXE(tfi->GetPeakNum(ions.at(i).c_str())));
+                   
+                  chimat->SetBinContent(FS,BS,tfi->GetNormChi2(tfi->GetPeakNum(ions.at(i).c_str()))); // we have identical copies of this content
+               }
+            } else if(strcmp(opt,"Src")==0){
+               tfi = (TFitInfo*) om->GetObject(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS),
+                                                  TSharcFormat::Get()->GetListName(DET,FS));  // haha TRUE DET FSBS
+               if(!tfi)
+                  continue;
+
+               // assume alphas are in back strip 24
+               mat->SetBinContent(FS,24,tfi->GetX(tfi->GetPeakNum(ions.at(i).c_str())));
+               mat->SetBinError(FS,24,tfi->GetXE(tfi->GetPeakNum(ions.at(i).c_str())));
+               
+               chimat->SetBinContent(FS,24,tfi->GetNormChi2(tfi->GetPeakNum(ions.at(i).c_str()))); // we have identical copies of this content
+
+             }
+         }
+       }
+    }
   
   printf(DGREEN"{TCalibrate} Message : ["DCYAN"%s"DGREEN"] Centroids have been extracted from charge matrix fits."RESET_COLOR"\n",opt);
   return true;
@@ -322,6 +362,7 @@ Bool_t TCalibrate::PutEnergiesInMatrix(Option_t *opt){
   /////////////////////////////////// NEEDS TO BE DONE FOR EACH NEW PARAMETER SET ///////////////////////////////////
   // calculate corresponding energies
   TDataManager *dm = TDataManager::Get();
+  TSharcInput *si = TSharcInput::Get();
 
   std::vector<std::string> ions = TSharcInput::Get()->GetIons(opt);
   if(ions.size()==0){
@@ -329,105 +370,200 @@ Bool_t TCalibrate::PutEnergiesInMatrix(Option_t *opt){
     return false;
   }
 
-  for(int DET=5;DET<=5;DET++)
-    for(int i=0; i<ions.size(); i++)
-      CreateCalObject(TSharcFormat::Get()->GetCalcMatName(),ions.at(i).c_str(),DET); // creates the empty ecalc matrics
-  
-  for(int DET=5;DET<=5;DET++)
-    for(int i=0; i<ions.size(); i++)
-      dm->MakeCalcEnergyMat(ions.at(i).c_str(),DET,opt); // fills the empty matrices
+   std::vector<double> Emeas;
+   TH2F *mat = 0;
+
+   for(int DET=5;DET<=8;DET++){
+      if(GetFlag("Quick") && DET!=5){
+         printf("Skipping DET %i [quick flag enabled]\n",DET);
+         continue;
+      }
+      for(int i=0; i<ions.size(); i++) {
+         
+         mat = (TH2F*)CreateCalObject(TSharcFormat::Get()->GetCalcMatName(),ions.at(i).c_str(),DET); // creates the empty calcE matrices
+          
+         for(int FS=0;FS<24;FS++){
+            if(strcmp(opt,"Run")==0) {
+               for(int BS=0;BS<8;BS++){
+                  
+               Emeas = si->GetEmeas(DET,FS,BS,ions.at(i).c_str(),opt);
+               if(Emeas.at(1)>0) // predicts punch through
+                  continue;
+
+               mat->SetBinContent(FS,BS,Emeas.at(0));
+               mat->SetBinError(FS,BS,100.0); // hard code uncertainty of error to be 100
+//                  Double_t Emerr = si->GetEmerr(DET,FS,BS,ion.at(i).c_str(),opt);
+//                  mat->SetBinError(FS,BS,Emerr);
+               }
+            } else if(strcmp(opt,"Src")==0){ // energies look the same in every front strip!!!!!!!!!!!!!!!!!!!!!!!!!
+               
+               Emeas = si->GetEmeas(DET,FS,24,ions.at(i).c_str(),opt);
+               if(Emeas.at(1)>0) // predicts punch through
+                  continue;
+
+               mat->SetBinContent(FS,24,Emeas.at(0));
+               mat->SetBinError(FS,24,100.0); // hard code uncertainty of error to be 100
+          
+             }
+         }
+       }
+    }
 
   printf(DGREEN"{TCalibrate} Message : ["DCYAN"%s"DGREEN"] Measured energies have been calculated from input parameters."RESET_COLOR"\n",opt);
   return true;
-  
 }
-
 
 Bool_t TCalibrate::ProduceCalGraphs(Option_t *opt){
   
   printf(DYELLOW"{TCalibrate} Message : ["DCYAN"%s"DYELLOW"] Calibration graphs will be produced using centroid and ecalc mats."RESET_COLOR"\n",opt);
-  if(strcmp(opt,"Src")==0)
-     return ProduceSrcCalGraphs(opt); // different procedure as we want to combine the alphas
-
-  std::vector<std::string> ions = TSharcInput::Get()->GetIons(opt);
-  
-  TDataManager *dm = TDataManager::Get();
-  for(int DET=5;DET<=8;DET++)
-    for(int FS=0;FS<24;FS++)
-      for(int i=0; i<ions.size(); i++)
-        CreateCalObject(TSharcFormat::Get()->GetCalGraphName(),ions.at(i).c_str(),DET,FS); // creates the empty centroid matrices
-
-  // make calgraphs
-  for(int DET=5;DET<=8;DET++)
-    for(int FS=0;FS<24;FS++)
-      for(int i=0; i<ions.size(); i++)
-        dm->MakeCalGraph(ions.at(i).c_str(),DET,FS,opt); 
-
-  printf(DGREEN"{TCalibrate} Message : ["DCYAN"%s"DGREEN"] Calibration graphs have been produced using centroid and ecalc mats."RESET_COLOR"\n",opt);
-  return true;
-}
-
-Bool_t TCalibrate::ProduceSrcCalGraphs(Option_t *opt){ 
-  
-  printf(DYELLOW"{TCalibrate} Message : ["DCYAN"%s"DYELLOW"] Alpha centroids will be merged into a combined channel."RESET_COLOR"\n",opt);
 
   /////////////////////////////////// NEEDS TO BE DONE FOR EACH NEW PARAMETER SET ///////////////////////////////////
   // calculate corresponding energies
   TDataManager *dm = TDataManager::Get();
+  TObjectManager *om = TObjectManager::Get();
+  TSharcInput *si = TSharcInput::Get();
 
-  std::vector<std::string> ions = TSharcInput::Get()->GetIons("Src");
+  std::vector<std::string> ions = si->GetIons(opt);
+  if(ions.size()==0){
+    printf("{TCalibrate} Warning :  There are no %s ions available for calibration. Cannot continue.\n",opt);
+    return false;
+  }
 
-  for(int DET=5;DET<=5;DET++)
-    for(int FS=0;FS<24;FS++)
-      for(int i=0; i<ions.size(); i++)
-        CreateCalObject(TSharcFormat::Get()->GetCalGraphName(),"Alphas",DET,FS); // creates the empty alpha graphs 
-  
-  for(int DET=5;DET<=5;DET++)
-    for(int FS=0;FS<24;FS++)
-      for(int i=0; i<ions.size(); i++)
-        dm->MakeCalGraph("Alphas",DET,FS,opt);
+  TGraphErrors *g = 0;
+  TH2F *hchg = 0;
+  TH2F *hchi = 0;
+  TH2F *heng = 0;
+  Double_t xmin = 0.0;//si->GetCalGraphFitRangeMin(opt);
+  Double_t xmax = 10000.0;//si->GetCalGraphFitRangeMax(opt);
+  const char *fname = "pol1";//si->GetCalGraphFitFunction(opt);
 
-  printf(DGREEN"{TCalibrate} Message : ["DCYAN"%s"DGREEN"] Alpha centroids have been merged into a combined channel."RESET_COLOR"\n",opt);
-  return true; 
-}
+  for(int DET=5;DET<=8;DET++){
+      if(GetFlag("Quick") && DET!=5){
+         printf("Skipping DET %i [quick flag enabled]\n",DET);
+         continue;
+      }
+    for(int i=0; i<ions.size(); i++) {
+      
+      hchg = (TH2F*) om->GetObject(TSharcFormat::Get()->GetCentMatName(ions.at(i).c_str(),true,DET),TSharcFormat::Get()->GetListName(DET));
+      if(!hchg && GetFlag("DEBUG") ){
+        printf("{TCalibrate} Warning :  Centroid matrix '%s' not found.\n",TSharcFormat::Get()->GetCentMatName(ions.at(i).c_str(),true,DET));
+        continue;
+      } 
+      hchi = (TH2F*) om->GetObject(TSharcFormat::Get()->GetCentChiMatName(ions.at(i).c_str(),true,DET),TSharcFormat::Get()->GetListName(DET));
+      if(!hchi && GetFlag("DEBUG") ){
+        printf("{TCalibrate} Warning :  Centroid chisquared matrix '%s' not found.\n",TSharcFormat::Get()->GetCentChiMatName(ions.at(i).c_str(),true,DET));
+        continue;
+      } 
+      heng = (TH2F*) om->GetObject(TSharcFormat::Get()->GetCalcMatName(ions.at(i).c_str(),true,DET),TSharcFormat::Get()->GetListName(DET));
+      if(!heng && GetFlag("DEBUG") ){
+        printf("{TCalibrate} Warning :  Calculated energy matrix '%s' not found.\n",TSharcFormat::Get()->GetCalcMatName(ions.at(i).c_str(),true,DET));
+        continue;
+      } 
+ 
+     for(int FS=0;FS<24;FS++){
+       if(strcmp(opt,"Run")==0) {
+         g  = (TGraphErrors*)CreateCalObject(TSharcFormat::Get()->GetCalGraphName(),ions.at(i).c_str(),DET,FS); // creates the empty calibration graph
+         g->SetLineColor(i+2); // graph color
+         
+         for(int BS=0;BS<8;BS++){
+         
+           if(GetFlag("DEBUG"))
+             printf("hchg->GetBinContent(FS,BS) = %.2f\t heng->GetBinContent(FS,BS) = %.2f\n",hchg->GetBinContent(FS,BS),heng->GetBinContent(FS,BS));
+           if(hchg->GetBinContent(FS,BS)==0 || heng->GetBinContent(FS,BS)==0)
+             continue;
+         
+           g->SetPoint(BS,hchg->GetBinContent(FS,BS),heng->GetBinContent(FS,BS));
+           g->SetPointError(BS,hchg->GetBinError(FS,BS),heng->GetBinError(FS,BS));
+         }
+       } else if(strcmp(opt,"Src")==0){ // don't hard code the combined alpha graph name as it is used throughout the code
+         
+         if(i==0){ // if the graph doesnt exist
+           g  = (TGraphErrors*)CreateCalObject(TSharcFormat::Get()->GetCalGraphName(),"Alpha",DET,FS); // creates the empty calibration graph
+           g->SetLineColor(1); // graph color
+         }
+         else 
+           g = (TGraphErrors*) om->GetObject(TSharcFormat::Get()->GetCalGraphName("Alpha",true,DET,FS),TSharcFormat::Get()->GetListName(DET,FS)); // get it from list
+         
+         if(hchg->GetBinContent(FS,24)==0 || heng->GetBinContent(FS,24)==0)
+             continue;
+         
+         g->SetPoint(i,hchg->GetBinContent(FS,24),heng->GetBinContent(FS,24));
+         g->SetPointError(i,hchg->GetBinError(FS,24),heng->GetBinError(FS,24));
 
-/*
-Bool_t TCalibrate::ProduceMulGraphs(Option_t *opt){
-  
-  TDataManager *dm = TDataManager::Get();
-  for(int DET=5;DET<=8;DET++)
-    for(int FS=0;FS<24;FS++)
-      CreateCalObject(TSharcFormat::Get()->GetMulGraphName(),"All",DET,FS); // creates the empty centroid matrices
-
-  // make mulgraphs
-  for(int DET=5;DET<=8;DET++)
-    for(int FS=0;FS<24;FS++)
-      dm->MakeCalGraph(TSharcFormat::Get()->GetCalcMatName(ions.at(i).c_str()),DET,FS); // "fit pol1"
-
+        }
+       if(g->GetN()>=3)
+          TFitManager::FitGraph(fname,g,xmin,xmax);
+     }
+   }
+ }
+  printf(DGREEN"{TCalibrate} Message : ["DCYAN"%s"DGREEN"] Calibration graphs have been produced using centroid and ecalc mats."RESET_COLOR"\n",opt);
   return true;
 }
-*/
-Bool_t TCalibrate::ProduceCombinedCalGraphs(Option_t *opt){
-  // this currently selects all ions available for combining
-  std::string ions;
-  for(int i=0; i<TSharcInput::Get()->GetIons("Run").size(); i++)
-    ions += TSharcInput::Get()->GetIons("Run").at(i) + " ";
-  for(int i=0; i<TSharcInput::Get()->GetIons("Src").size(); i++)
-    ions += TSharcInput::Get()->GetIons("Src").at(i) + " ";
+
+
+Bool_t TCalibrate::ProduceCombinedGraphs(){
   
+  printf(DYELLOW"{TCalibrate} Message : ["DCYAN"%s"DYELLOW"] Combined graphs will be produced using individual calibration graphs [and range specs]."RESET_COLOR"\n",opt);
+
+  /////////////////////////////////// NEEDS TO BE DONE FOR EACH NEW PARAMETER SET ///////////////////////////////////
+  // calculate corresponding energies
   TDataManager *dm = TDataManager::Get();
+  TObjectManager *om = TObjectManager::Get();
+  TSharcInput *si = TSharcInput::Get();
   
-  for(int DET=5;DET<=8;DET++)
-     for(int FS=0;FS<24;FS++)
-       CreateCalObject(TSharcFormat::Get()->GetMulGraphName(),opt,DET,FS);
-  
-  for(int DET=5;DET<=8;DET++)
-     for(int FS=0;FS<24;FS++)
-       dm->CombineGraphs(DET,FS,opt); // combine proton and deuteron points into a single graph
+  std::vector<std::string> ions = si->GetIons(opt);
+  if(ions.size()==0){
+    printf("{TCalibrate} Warning :  There are no %s ions available for calibration. Cannot continue.\n",opt);
+    return false;
+  }
+  ions.push_back("Alpha"); // ugly and hard coded
+
+  TGraphErrors *gmaster = 0;
+  TGraphErrors *g = 0;
+  Double_t x,y,xe,ye;
+  UInt_t N;
+  Double_t xmin = 0.0;//si->GetCalGraphFitRangeMin(opt);
+  Double_t xmax = 10000.0;//si->GetCalGraphFitRangeMax(opt);
+  const char *fname = "pol1";//si->GetCalGraphFitFunction(opt);
+
+  for(int DET=5;DET<=8;DET++){
+    if(GetFlag("Quick") && DET!=5){
+       printf("Skipping DET %i [quick flag enabled]\n",DET);
+       continue;
+    }
+    for(int FS=0;FS<24;FS++){
+      gmaster  = (TGraphErrors*)CreateCalObject(TSharcFormat::Get()->GetCombinedGraphName(),"",DET,FS); // creates the empty combined graph
+      
+      for(int i=0;i<ions.size();i++){
+       
+        g = (TGraphErrors*) om->GetObject(TSharcFormat::Get()->GetCalGraphName(ions.at(i).c_str(),true,DET,FS),TSharcFormat::Get()->GetListName(DET,FS)); 
+        if(!g)
+           continue;
+
+        for(int p=0; p<g->GetN(); p++){   
+           g->GetPoint(p,x,y);
+           //if(dm->ThrowPoint(x,y,ions.at(i).c_str())) // applies sharc input settings to keep or discard points in graphs
+           // continue;
+           N = gmaster->GetN();
+           gmaster->SetPoint(N,x,y);
+           gmaster->SetPointError(N,xe,ye);
+        }
+      }
+      if(gmaster->GetN()>3)
+         TFitManager::FitGraph(fname,gmaster,xmin,xmax);
+    }
+  }
+
+  printf(DGREEN"{TCalibrate} Message : ["DCYAN"%s"DGREEN"] Combined graphs have been produced using individual calibration graphs [and range specs]."RESET_COLOR"\n");
+  return true;
 }
+
+
+
+
 //Bool_t TCalibrate::ProduceResults(){}
 
-void TCalibrate::CreateCalObject(const char *objname, Option_t *opt, Int_t DET, Int_t FS) {
+TObject *TCalibrate::CreateCalObject(const char *objname, Option_t *opt, Int_t DET, Int_t FS) {
 
   TObjectManager *om = TObjectManager::Get();
   TSharcFormat *sf = TSharcFormat::Get();
@@ -441,8 +577,11 @@ void TCalibrate::CreateCalObject(const char *objname, Option_t *opt, Int_t DET, 
     obj = sf->CreateObject(objname,opt,DET);
     om->AddObjectToList(obj,sf->GetListName(DET));
   }
-
-//  printf("-> I Just made \t%s\t :]\n",obj->GetName());
+  
+  if(GetFlag("DEBUG"))
+    printf("-> I Just made \t%s\t :]\n",obj->GetName());
+  
+  return obj;
 }
 
 Bool_t TCalibrate::ExistInFile(const char *name) {
