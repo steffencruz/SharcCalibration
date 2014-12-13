@@ -32,8 +32,10 @@ void TFileManager::ReadKeys(TDirectoryFile *currentdir) {
   TObjectManager::Get()->GetList(currentpathname.c_str());
   
   while(TKey *key = (TKey*)iter.Next()) {
+    key->Print();
     TObject *obj = key->ReadObj();
-//    obj->Print();  
+    printf("obj = %p\n",obj);
+    obj->Print();  
     if(obj->InheritsFrom("TSharcInput")){
       TSharcInput *si = (TSharcInput*)obj;
     } else if(obj->InheritsFrom("TDirectoryFile"))
@@ -59,6 +61,7 @@ Bool_t TFileManager::ReadFile(const char *fname, Option_t *opt){
     return false;
   }
   ReadKeys((TDirectoryFile*)f);
+  
   UInt_t nobjread = TObjectManager::Get()->GetMasterList()->GetEntries();
   std::string siname = TSharcInput::Get()->GetInfileName();
   if(siname.length() && nobjread){
@@ -97,8 +100,6 @@ void TFileManager::WriteList(TFile &file,TList *list, Option_t *opt){
 
 void TFileManager::WriteFile(const char *fname, Option_t *opt) {
 
-  if(!fname)
-     fname = TSharcInput::Get()->MakeOutputName();
   TFile file(fname,opt);
 
   TSharcInput::Get()->Write(); // writes the input parameters

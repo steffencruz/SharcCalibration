@@ -21,6 +21,7 @@ class TSharcFormat : public TObject {
     //Uncalibrated spectra cannot be grouped
     const char *GetChgMatName  (const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fChgMatName.c_str(),ion,path,det,fs)    ;}
     const char *GetCentMatName (const char *ion="",Bool_t path=false,Int_t det=-1)                        {return GetObjectName(fCentMatName.c_str(),ion,path,det)      ;}
+    const char *GetCentChiMatName (const char *ion="",Bool_t path=false,Int_t det=-1)                     {return GetObjectName(fCentChiMatName.c_str(),ion,path,det)   ;}
     const char *GetCalcMatName (const char *ion="",Bool_t path=false,Int_t det=-1)                        {return GetObjectName(fCalcMatName.c_str(),ion,path,det)      ;}
     const char *GetChgSpecName (const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1){return GetObjectName(fChgSpecName.c_str(),ion,path,det,fs,bs);}
     const char *GetCalGraphName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fCalGraphName.c_str(),ion,path,det,fs)  ;}
@@ -45,6 +46,7 @@ class TSharcFormat : public TObject {
     static const std::string fChgMatName  ;    // [TH2F] Charge vs BackStrip    [p+d+c],[a]
     static const std::string fChgSpecName ;    // [TH1D] Charge                 [p+d+c],[a]
     static const std::string fCentMatName ;    // [TH2F] Centroid               [p+d+c],[a]
+    static const std::string fCentChiMatName ; // [TH2F] Centroid chi squared   [p+d+c],[a]
     static const std::string fCalcMatName ;    // [TH2F] Calculated energy      [p+d+c],[a]
     static const std::string fCalGraphName;    // [TGE]  Energy vs Charge       [p+d+a]
     static const std::string fMulGraphName;    // [TGE]  Energy vs Charge       [p+d+a]

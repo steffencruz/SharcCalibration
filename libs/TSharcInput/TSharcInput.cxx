@@ -5,6 +5,7 @@
 #include "Globals.h"
 #include "TSharcInput.h"
 
+#include "TCalibrate.h"
 #include "TChannel.h"
 #include "TNucleus.h"
 #include "TKinematics.h"
@@ -294,7 +295,8 @@ std::vector<double> TSharcInput::GetEmeas(UInt_t DET, UInt_t FS, UInt_t BS,const
     return emeas;
   }
   
- printf("[DET = %i FS = %i BS = %i]\t theta = %.2f [deg]\t efull = %.2f [keV]\t emeas[0] = %.2f [keV]\t emeas[1] = %.2f [keV]\n",DET,FS,BS,position.Theta()*TMath::RadToDeg(),efull,emeas.at(0),emeas.at(1));
+  if(TCalibrate::Get()->GetFlag("DEBUG"))
+    printf("[DET = %i FS = %i BS = %i]\t theta = %.2f [deg]\t efull = %.2f [keV]\t emeas[0] = %.2f [keV]\t emeas[1] = %.2f [keV]\n",DET,FS,BS,position.Theta()*TMath::RadToDeg(),efull,emeas.at(0),emeas.at(1));
   return emeas;
 }
 
@@ -479,7 +481,7 @@ Bool_t TSharcInput::ParseInputFile(const char *filedata){
 const char *TSharcInput::MakeOutputName(){
 
   char outname[256];
-  sprintf(outname,"Cal_%iSr_Dec10_2014.root",GetA());
+  sprintf(outname,"Cal_%iSr.root",GetA());
   std::string sname = outname;
 
   return sname.c_str();

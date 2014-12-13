@@ -19,32 +19,32 @@ class TCalibrate : public TNamed {
     virtual void Clear(Option_t *opt = "");    
 
   public:
-    void DeltaCal(const char *ifname);
-    
     void LoadCal(const char *ifname);
-    void SaveCal();
+    void SaveCal(const char *ofname=NULL);
+    Bool_t InitDeltaCal(const char *ifname);
     
     Bool_t GetFlag(const char *flagname, Option_t *opt = "");
+    void SetFlag(const char *flagname, Bool_t flag, Option_t *opt = "");
+
   private:
     static TCalibrate *fCalibrate;
     TCalibrate(Bool_t);
 
-    Bool_t InitDeltaCal(const char *ifname);
-    const char *CalibrateSeparate(Option_t *opt);
-    void SetFlag(const char *flagname, Option_t *opt, Bool_t flag);
     
     Bool_t OpenCalibration(const char *cfname);
     
     Bool_t ExistInFile(const char *objname);
-    void CreateCalObject(const char *objtype, Option_t *opt, Int_t det=-1, Int_t fs=-1);
-   
+    TObject *CreateCalObject(const char *objtype, Option_t *opt, Int_t det=-1, Int_t fs=-1);
+  
+  public:
+
    // option flag allows us to process run/src data in same function
     Bool_t MakeChargeMatrices(Option_t *opt);
     Bool_t GetCentroidsFromData(Option_t *opt);
     Bool_t PutCentroidsInMatrix(Option_t *opt);
     Bool_t PutEnergiesInMatrix(Option_t *opt);
     Bool_t ProduceCalGraphs(Option_t *opt);
-    Bool_t ProduceSrcCalGraphs(Option_t *opt="");
+    //Bool_t ProduceSrcCalGraphs(Option_t *opt="");
 //    Bool_t ProduceMulGraphs(Option_t *opt);
     Bool_t ProduceCombinedCalGraphs(Option_t *opt);
 

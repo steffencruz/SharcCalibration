@@ -41,6 +41,7 @@ class TDataManager: public TNamed {
     void FillChargeMats(Option_t *opt = "");
     
     void MakeChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt = "");
+    void MakeChargeSpectrumSrc(UInt_t DET, UInt_t FS, Option_t *opt = "");
     void FitChargeSpectrum(UInt_t DET, UInt_t FS, UInt_t BS, Option_t *opt = "");
 
     void MakeCentroidMat(const char *ion, UInt_t DET, Option_t *opt);

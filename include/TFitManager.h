@@ -24,7 +24,7 @@ class TFitManager : public TNamed  {
   public:
 
     static TFitInfo *FitHist(const char *fcn, TH1D *h, Double_t *parms=0, UInt_t Nparms=10, Double_t xlow=-1, Double_t xhigh=-1);
-    static TFitInfo *FitGraph(const char *fcn, TGraph *h, Double_t xlow=-1, Double_t xhigh=-1, const char *fname = "Function");
+    static TFitInfo *FitGraph(const char *fcn, TGraph *g, Double_t xlow=-1, Double_t xhigh=-1);
 //    static TFitInfo *FitGraph(void *fcn, TGraph *h, Double_t *parms=0, UInt_t Nparms=10, Double_t xlow=-1, Double_t xhigh=-1, const char *fname = "Function");
     
 //    static TFitInfo *FitHist(TF1 *func, TH1D *h, Double_t *parms=0, UInt_t Nparms=10, Double_t xlow=-1, Double_t xhigh=-1);
@@ -37,6 +37,15 @@ class TFitManager : public TNamed  {
     static const char *fFitOpts;
     static const char *fDispOpts;
  ClassDef(TFitManager,0)
+};
+
+
+class sort_indices {
+   private:
+      double *mparr;
+   public:
+      sort_indices(double *parr) : mparr(parr) { }
+      bool operator()(int i,int j){return mparr[i]<mparr[j];}
 };
 
 #endif

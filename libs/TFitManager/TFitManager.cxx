@@ -52,18 +52,25 @@ TFitInfo *TFitManager::FitHist(const char *fcn, TH1D *h, Double_t *parms, UInt_t
     func->SetParName(i,parnames.at(i).c_str());
 
   func->SetNpx(1000);
-
+ 
   TFitResultPtr p = h->Fit(func,fFitOpts,fDispOpts,xlow,xhigh);//done.
   Bool_t status = p;
 
   Double_t xpos[npeaks],ypos[npeaks];
+  Int_t indices[npeaks];
   for(int i=0;i<npeaks;i++){
     xpos[i] = func->GetParameter(Form("PEAK%i_MEAN",i));
     ypos[i] = func->GetParameter(Form("PEAK%i_HEIGHT",i));
+    indices[i] = i;
   }
+  std::sort(indices,indices+npeaks,sort_indices(xpos));
+ 
+ //for(int i=0;i<npeaks;i++)
+    //printf("\t\tindices[%i] = %i\n",i,indices[i]);
 
-  TFitInfo *tfi = new TFitInfo(func,xpos,ypos,npeaks,status);
-
+  TFitInfo *tfi = new TFitInfo(func,xpos,ypos,npeaks,indices,status);
+  //tfi->Print();
+ //printf("I am here.\n");
   return tfi;
 }
 
@@ -121,7 +128,6 @@ std::vector<double> TFitManager::GetParameters(const char *fname, TSpectrum *s, 
   xpos = s->GetPositionX();
   ypos = s->GetPositionY();
 
-  pars.push_back((double)npeaks); // first parameter is number of peaks
   
 /*
   pars.push_back(0.0); // constant background
@@ -137,6 +143,7 @@ std::vector<double> TFitManager::GetParameters(const char *fname, TSpectrum *s, 
   }
 */
   if(name.compare("TGRSIFunctions::LanGaus")==0){
+    pars.push_back((double)npeaks); // first parameter is number of peaks
     pars.push_back(0.0); // constant background
     pars.push_back(0.0); // linear background
     pars.push_back(res); // convolution resolution (don't set it here)
@@ -147,6 +154,7 @@ std::vector<double> TFitManager::GetParameters(const char *fname, TSpectrum *s, 
     }
   }
   else if(name.compare("TGRSIFunctions::MultiSkewedGausWithBG2")==0){
+    pars.push_back((double)npeaks); // first parameter is number of peaks
     pars.push_back(0.0); // constant background
     pars.push_back(0.0); // linear background
     for(int i=0; i<npeaks; i++){
@@ -157,6 +165,7 @@ std::vector<double> TFitManager::GetParameters(const char *fname, TSpectrum *s, 
     }
   }
   else if(name.compare("TGRSIFunctions::MultiGausWithBG")==0){
+    pars.push_back((double)2*npeaks); // first parameter is number of peaks
     pars.push_back(0.0); // constant background
     pars.push_back(0.0); // linear background
     for(int i=0; i<npeaks; i++){
