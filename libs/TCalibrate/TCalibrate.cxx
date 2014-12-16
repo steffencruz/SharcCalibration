@@ -279,6 +279,8 @@ Bool_t TCalibrate::GetCentroidsFromData(Option_t *opt){
           
           // Set Some names and put TFitInfo into list
           finfo->SetInfoName(TSharcFormat::Get()->GetFitInfoName(opt,true,DET,FS,BS));
+          
+          // THE LINE BELOW CREATES AN ERROR!!
           finfo->SetPeakNames(si->GetIons(opt),opt); // calls the peaks Prot,Deut,Alpha0 or whatever
           om->AddObjectToList(finfo,TSharcFormat::Get()->GetListName(DET,FS,BS));
 
@@ -391,7 +393,7 @@ Bool_t TCalibrate::PutEnergiesInMatrix(Option_t *opt){
                   continue;
 
                mat->SetBinContent(FS,BS,Emeas.at(0));
-               mat->SetBinError(FS,BS,100.0); // hard code uncertainty of error to be 100
+               mat->SetBinError(FS,BS,Emeas.at(0)*0.05); // hard code uncertainty of error to be 100
 //                  Double_t Emerr = si->GetEmerr(DET,FS,BS,ion.at(i).c_str(),opt);
 //                  mat->SetBinError(FS,BS,Emerr);
                }
@@ -402,7 +404,7 @@ Bool_t TCalibrate::PutEnergiesInMatrix(Option_t *opt){
                   continue;
 
                mat->SetBinContent(FS,24,Emeas.at(0));
-               mat->SetBinError(FS,24,100.0); // hard code uncertainty of error to be 100
+               mat->SetBinError(FS,24,Emeas.at(0)*0.05); // hard code uncertainty of error to be 100
           
              }
          }
@@ -501,7 +503,7 @@ Bool_t TCalibrate::ProduceCalGraphs(Option_t *opt){
 }
 
 
-Bool_t TCalibrate::ProduceCombinedGraphs(){
+Bool_t TCalibrate::ProduceCombinedGraphs(Option_t *opt){
   
   printf(DYELLOW"{TCalibrate} Message : ["DCYAN"%s"DYELLOW"] Combined graphs will be produced using individual calibration graphs [and range specs]."RESET_COLOR"\n",opt);
 

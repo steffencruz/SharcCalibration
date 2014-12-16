@@ -17,6 +17,7 @@ const std::string TSharcFormat::fCentChiMatName  = "CentroidChi2Matrix";      //
 const std::string TSharcFormat::fCalcMatName     = "EnergyCalcMatrix";        // [TH2F] Calculated energy      [p+d+c],[a]
 const std::string TSharcFormat::fCalGraphName    = "CalibrationGraph";        // [TGE]  Energy vs Charge       [p+d+a]
 const std::string TSharcFormat::fMulGraphName    = "MultiGraph";              // [TGE]  Energy vs Charge       [p+d+a]
+const std::string TSharcFormat::fCombinedGraphName    = "CombinedCalibrationGraph";        // [TGE]  Energy vs Charge       [p+d+a]
 const std::string TSharcFormat::fKinMatName      = "KinematicsMatrix";        // [TH2F] Energy vs ThetaLab     [p],[d]
 const std::string TSharcFormat::fResMatName      = "KinematicsResidual";      // [TH2F] Energy-Kin vs ThetaLab [p],[d]
 const std::string TSharcFormat::fExcMatName      = "ExcitationMatrix";        // [TH2F] Excitation vs ThetaLab [p],[d]

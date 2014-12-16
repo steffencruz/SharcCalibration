@@ -16,7 +16,7 @@ INC += -I$(MIDASSYS)/include
 
 LIBDIR = -L$(BASE)/libs
 LIBDIR += -L$(GRSISYS)/libraries
-LIBDIR += -L/home/tiguser/packages/SharcAnalysis
+LIBDIR += -L${PROGDIR}/SharcAnalysis
 #ifdef MIDASSYS
 #ifeq ($(PLATFORM),Darwin)
 #LIBDIR += -L$(MIDASSYS)/darwin/lib

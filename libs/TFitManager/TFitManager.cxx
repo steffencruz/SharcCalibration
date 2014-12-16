@@ -52,7 +52,6 @@ TFitInfo *TFitManager::FitHist(const char *fcn, TH1D *h, Double_t *parms, UInt_t
     func->SetParName(i,parnames.at(i).c_str());
 
   func->SetNpx(1000);
- 
   TFitResultPtr p = h->Fit(func,fFitOpts,fDispOpts,xlow,xhigh);//done.
   Bool_t status = p;
 
@@ -165,7 +164,8 @@ std::vector<double> TFitManager::GetParameters(const char *fname, TSpectrum *s, 
     }
   }
   else if(name.compare("TGRSIFunctions::MultiGausWithBG")==0){
-    pars.push_back((double)2*npeaks); // first parameter is number of peaks
+    //pars.push_back((double)2*npeaks); // first parameter is number of peaks
+    pars.push_back((double) npeaks); // first parameter is number of peaks // THIS IS THE THING I CHANGED AT 23:39 on Sun Dec 14
     pars.push_back(0.0); // constant background
     pars.push_back(0.0); // linear background
     for(int i=0; i<npeaks; i++){
@@ -173,11 +173,11 @@ std::vector<double> TFitManager::GetParameters(const char *fname, TSpectrum *s, 
        pars.push_back(xpos[i]);     // main peak centroid
        pars.push_back(res);        // main peak width (don't set here)
     }
-    for(int i=0; i<npeaks; i++){
-       pars.push_back(ypos[i]*0.1); // sub peak height
-       pars.push_back(xpos[i]-50);  // sub peak centroid
-       pars.push_back(res);        // sub peak width (don't set here)
-    }
+//    for(int i=0; i<npeaks; i++){
+//       pars.push_back(ypos[i]*0.1); // sub peak height
+//       pars.push_back(xpos[i]-50);  // sub peak centroid
+//       pars.push_back(res);        // sub peak width (don't set here)
+//    }
   } else {
     printf("{TFitManager} Warning :  Function '%s' not recognised.\n");
   }
@@ -223,7 +223,8 @@ std::vector<std::string> TFitManager::GetParNames(const char *fname, UInt_t npea
   else if(name.compare("TGRSIFunctions::MultiGausWithBG")==0){
     parnames.push_back("BG_CONSTANT");
     parnames.push_back("BG_LINEAR");
-    for(int i=0; i<2*npeaks; i++){
+//    for(int i=0; i<2*npeaks; i++){
+    for(int i=0; i<npeaks; i++){
        sprintf(buffer,"PEAK%i_HEIGHT",i);
        parnames.push_back(buffer); 
        sprintf(buffer,"PEAK%i_MEAN",i);
