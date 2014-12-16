@@ -46,7 +46,7 @@ class TCalibrate : public TNamed {
     Bool_t ProduceCalGraphs(Option_t *opt);
     //Bool_t ProduceSrcCalGraphs(Option_t *opt="");
 //    Bool_t ProduceMulGraphs(Option_t *opt);
-    Bool_t ProduceCombinedCalGraphs(Option_t *opt);
+    Bool_t ProduceCombinedGraphs(Option_t *opt = "");
 
   public:
     // I would love for this to be able to open a GUI that shows sharc statuses

@@ -1,0 +1,55 @@
+nameless {
+
+// CALIRATION INFO              //////////////////////////////////////////////////////
+  CalFileDir           : /tig/grsmid01_data4/tigress/PeterSteffen/sr95/calfiles/
+  CalFile              : Empty.cal
+  DeltaCalStyle        : Src Run // this will combine the data sets where available, and if one data set is present it will use that.
+//  PadCalStyle          : Run
+
+// BEAM AND TARGET INFO         //////////////////////////////////////////////////////
+  Z                    : 38
+  N                    : 57
+  EperU                : 5.515        // MeV/u
+  SharcPosOffsetXYZ    : 0.0 0.0 -1.2 // mm
+  TargetThickness      : 4.5          // um
+  TargetMaterial       : cd2
+
+// FITTING INFO                 //////////////////////////////////////////////////////
+  RunChargeSpecFunction   : TGRSIFunctions::MultiSkewedGausWithBG2
+  RunChargeSpecFitRange   : 500 4000
+  RunChargeSpecResolution : 100
+  RunChargeSpecThreshold  : 0.25
+  RunIonType              : Prot 
+  RunIonType              : Deut 
+  
+  SrcChargeSpecFunction   : TGRSIFunctions::MultiGausWithBG
+  SrcChargeSpecFitRange   : 2000 8000
+  SrcChargeSpecResolution : 20
+  SrcChargeSpecThreshold  : 0.25
+  SrcIonType              : Alpha0
+  SrcIonType              : Alpha1
+  SrcIonType              : Alpha2
+  SrcIonEnergy            : 5156.6 5484.6 5804.8 
+
+// DATA PROCESSING INFO         //////////////////////////////////////////////////////
+  // run , don't keep ending slashe XO
+  rundatadir           : /tig/grsmid01_data4/tigress/PeterSteffen/Dec10_2014_sr95/
+  rundata              : analysis*
+//  rundata              : analysis2898*
+  
+  // src
+  srcdatadir           : /tig/grsmid01_data4/tigress/PeterSteffen/Dec9_2014/     //     /tig/grsmid01_data4/tigress/PeterSteffen/sr95/srcdata/
+  srcdata              : analysis*
+//  srcdata              : analysis28770_000*
+//  srcdata              : analysis28770_001*
+//  srcdata              : analysis28770_003*
+  
+  // cuts
+  cutfiledir           : /tig/grsmid01_data4/tigress/PeterSteffen/sr95/cutfiles/
+  cutfile              : // these should probably be made in the calibration code ?
+
+  FrontChargeMinMax    : 200 20000
+  BackChargeMinMax     : 200 20000
+  PadChargeMinMax      : 0   50
+
+}

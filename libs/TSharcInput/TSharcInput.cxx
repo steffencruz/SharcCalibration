@@ -101,13 +101,17 @@ void TSharcInput::Clear(Option_t *opt) {
   fneutrons = 0;
   ftargthick = 0.0;
 
+  fRunIons.clear();
+  fSrcIons.clear();
+  fSrcEnergies.clear();
+
   ftargmat.clear(); 
   frundatadir.clear();     
   fsrcdatadir.clear();    
 }
 
 bool TSharcInput::InitSharcInput(const char *filename){
-
+  Clear();
   CopyInputFile(filename); 
 
   bool input = ParseInputFile(GetInfileData());
@@ -127,6 +131,32 @@ bool TSharcInput::InitSharcInput(const char *filename){
   
   return false;
 }
+
+
+bool TSharcInput::UpdateInputFile(const char *filename) {
+
+  if(!filename)
+     return false;
+  
+  std::ifstream infile;
+  infile.open(filename);
+  infile.seekg(0,std::ios::end);
+  int length = infile.tellg();
+  char buffer[length];
+
+  if(length<1)
+     return false;
+
+  infile.seekg(0,std::ios::beg);
+  infile.read(buffer,length);
+  
+  std::string tempdata;
+  tempdata.assign(buffer);
+
+  ParseInputFile(tempdata.c_str());
+
+}
+
 
 bool TSharcInput::InitSharcInput(){
   if(fInfileData.length()<1)
@@ -417,13 +447,19 @@ Bool_t TSharcInput::ParseInputFile(const char *filedata){
             TSharcAnalysis::SetTarget(tempdouble); // IT HAPPENS NOW!!
             SetTargetThickness(tempdouble);
           } else if(type.compare("SRCIONTYPE")==0){
-            AddSrcIon(line.c_str());
+           // if(GetSrcIons().size()==0)
+               AddSrcIon(line.c_str());
+           // else printf("{TSharcInput} Warning :  Source Ion types may NOT be updated.\n");
           } else if(type.compare("SRCIONENERGY")==0){
-            Double_t tempdouble; 
-            while(ss>>tempdouble)
-              AddSrcEnergy(tempdouble);
+          //  if(GetSrcEnergies().size()==0){
+               Double_t tempdouble; 
+               while(ss>>tempdouble)
+                 AddSrcEnergy(tempdouble);
+           // } else printf("{TSharcInput} Warning :  Source Ion energies may NOT be updated.\n");
           } else if(type.compare("RUNIONTYPE")==0){
-            AddRunIon(line.c_str());
+           // if(GetRunIons().size()==0)
+               AddRunIon(line.c_str());
+           // else printf("{TSharcInput} Warning :  Run Ion types may NOT be updated.\n");
           } else if(type.compare("RUNDATADIR")==0){
             SetRunDataDir(line.c_str());
           } else if(type.compare("SRCDATADIR")==0){

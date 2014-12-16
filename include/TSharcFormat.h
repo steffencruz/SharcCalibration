@@ -26,6 +26,7 @@ class TSharcFormat : public TObject {
     const char *GetChgSpecName (const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1){return GetObjectName(fChgSpecName.c_str(),ion,path,det,fs,bs);}
     const char *GetCalGraphName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fCalGraphName.c_str(),ion,path,det,fs)  ;}
     const char *GetMulGraphName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)            {return GetObjectName(fMulGraphName.c_str(),ion,path,det,fs)  ;}
+    const char *GetCombinedGraphName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1)       {return GetObjectName(fMulGraphName.c_str(),ion,path,det,fs)  ;}
     //Calibrated spectra can be grouped (ie. plot different detectors together)  
     const char *GetKinMatName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1)  {return GetObjectName(fKinMatName.c_str(),ion,path,det,fs)    ;}
     const char *GetResMatName(const char *ion="",Bool_t path=false,Int_t det=-1,Int_t fs=-1,Int_t bs=-1)  {return GetObjectName(fResMatName.c_str(),ion,path,det,fs)    ;}
@@ -50,6 +51,7 @@ class TSharcFormat : public TObject {
     static const std::string fCalcMatName ;    // [TH2F] Calculated energy      [p+d+c],[a]
     static const std::string fCalGraphName;    // [TGE]  Energy vs Charge       [p+d+a]
     static const std::string fMulGraphName;    // [TGE]  Energy vs Charge       [p+d+a]
+    static const std::string fCombinedGraphName;    // [TGE]  Energy vs Charge       [p+d+a]
     static const std::string fKinMatName  ;    // [TH2F] Energy vs ThetaLab     [p],[d]
     static const std::string fResMatName  ;    // [TH2F] Energy-Kin vs ThetaLab [p],[d]
     static const std::string fExcMatName  ;    // [TH2F] Excitation vs ThetaLab [p],[d]

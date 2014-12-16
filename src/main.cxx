@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
    cal->SetFlag("DEBUG",true);
    cal->SetFlag("Quick",false);
-   cal->SetFlag("CentroidsOnly",true);
+   cal->SetFlag("CentroidsOnly",false);
    cal->SetFlag("DontSave",false);
 
    std::string strarg = argv[1];
@@ -35,8 +35,8 @@ int main(int argc, char **argv) {
      return 1;
    }
 
-   DoCalibrate("Src");
    DoCalibrate("Run");
+   DoCalibrate("Src");
 
    //cal->SaveCal();
    printf("PROGRAM ENDING.\n");
@@ -55,7 +55,7 @@ const char *DoCalibrate(Option_t *opt) {
       
       cal->SetFlag("ChgMats",true,opt);
       cal->Print();
-      if(cal->GetFlag("DontSave"))
+      if(!cal->GetFlag("DontSave"))
          cal->SaveCal("CurrentCal_ChgMats.root"); 
    }
 /************************************************/
@@ -68,7 +68,7 @@ const char *DoCalibrate(Option_t *opt) {
       cal->SetFlag("ChgSpecs",true,opt);
       cal->SetFlag("ChgFits",true,opt);
       cal->Print();
-      if(cal->GetFlag("DontSave"))
+      if(!cal->GetFlag("DontSave"))
          cal->SaveCal("CurrentCal_ChgFits.root"); 
    }
 /************************************************/   
@@ -79,7 +79,7 @@ const char *DoCalibrate(Option_t *opt) {
       
       cal->SetFlag("CentMats",true,opt);
       cal->Print();
-      if(cal->GetFlag("DontSave"))
+      if(!cal->GetFlag("DontSave"))
          cal->SaveCal("CurrentCal_CentMats.root"); 
    }
 /************************************************/
@@ -93,7 +93,7 @@ const char *DoCalibrate(Option_t *opt) {
       
       cal->SetFlag("CalcMats",true,opt);
       cal->Print();
-      if(cal->GetFlag("DontSave"))
+      if(!cal->GetFlag("DontSave"))
          cal->SaveCal("CurrentCal_CalcMats.root"); 
    }
 /************************************************/
@@ -105,7 +105,7 @@ const char *DoCalibrate(Option_t *opt) {
       
       cal->SetFlag("CalGraphs",true,opt);
       cal->Print();
-      if(cal->GetFlag("DontSave"))
+      if(!cal->GetFlag("DontSave"))
          cal->SaveCal("CurrentCal_CalGraphs.root"); 
    }
 /************************************************/

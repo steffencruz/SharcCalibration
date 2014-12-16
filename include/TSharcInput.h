@@ -26,6 +26,9 @@ class TSharcInput : public TNamed  {
     Bool_t InitSharcInput(const char *filename);
     Bool_t InitSharcInput(void);
 
+
+    Bool_t UpdateInputFile(const char *); // I TAKE A FILE!
+
     virtual void Print(Option_t *opt = "");
     virtual void Clear(Option_t *opt = "");
   
@@ -38,6 +41,7 @@ class TSharcInput : public TNamed  {
     void trim(std::string *line, const std::string trimchars = " \f\t\n\r\v");
     Bool_t CopyInputFile(const char *);
     Bool_t ParseInputFile(const char *);
+
     Bool_t CheckInput();
   private:
     

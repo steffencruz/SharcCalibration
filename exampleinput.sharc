@@ -40,7 +40,9 @@ nameless {
   
   // src
   srcdatadir           : /tig/grsmid01_data4/tigress/PeterSteffen/Dec9_2014/     //     /tig/grsmid01_data4/tigress/PeterSteffen/sr95/srcdata/
+//  srcdatadir           : /tig/grsmid01_data4/tigress/PeterSteffen/Dec12_2014_sr95/     //     /tig/grsmid01_data4/tigress/PeterSteffen/sr95/srcdata/
   srcdata              : analysis*
+//  srcdata              : analysis29186_00*.root
 //  srcdata              : analysis28770_000.root
   
   // cuts

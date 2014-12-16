@@ -23,6 +23,7 @@ TFitInfo::TFitInfo(TF1 *func,Double_t *xvals, Double_t *yvals, UInt_t npeaks,Int
   fpeaknames.resize(npeaks);
   //func->Print();
   for(int i=0; i<npeaks; i++){
+//     printf("peak %i\t indices[%i] = %i\n",i,i,indices[i]);
      int xnum = func->GetParNumber((Form("PEAK%i_MEAN",indices[i])));
      int ynum = func->GetParNumber((Form("PEAK%i_HEIGHT",indices[i])));
      
@@ -36,7 +37,6 @@ TFitInfo::TFitInfo(TF1 *func,Double_t *xvals, Double_t *yvals, UInt_t npeaks,Int
   SetFunction(func);
   SetStatus(flag);
   SetName(finame);
-
 }
 
 void TFitInfo::SetInfoName(const char *infoname){
@@ -55,9 +55,12 @@ void TFitInfo::SetPeakNames(std::vector<std::string> ions,const char *opt){
      }
   } else if(strcmp(opt,"Src")==0) {
      for(int i=0; i<ions.size();i++){
-       if(2*i>=GetNPeaks())
+       if(i>=GetNPeaks())
           break;
-      SetPeakName(i*2+1,ions.at(i).c_str());
+      SetPeakName(i,ions.at(i).c_str());
+     //  if(2*i>=GetNPeaks())
+     //     break;
+     // SetPeakName(i*2+1,ions.at(i).c_str());
      }
   } 
 }
