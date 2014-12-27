@@ -1,0 +1,6 @@
+*.root
+*.o
+*.so
+*.mid
+*.swp
+*Dict*
